@@ -798,6 +798,39 @@ int                         sfcgal_geometry_covers( const sfcgal_geometry_t* geo
  */
 int                         sfcgal_geometry_covers_3d( const sfcgal_geometry_t* geom1, const sfcgal_geometry_t* geom2 );
 
+/**
+ * Returns the substring of the given LineString between fractional distances
+ * @pre isValid(geom) == true
+ * @pre geom is a Linestring
+ * @pre -1 <= start <= 1
+ * @pre -1 <= end <= 1
+ * @post isValid(return) == true
+ * @ingroup capi
+ */
+sfcgal_geometry_t*          sfcgal_geometry_line_sub_string( const sfcgal_geometry_t* geom, double start, double end );
+
+/**
+ * Returns the alpha shapes of geom
+ * @pre isValid(geom) == true
+ * @pre alpha >= 0
+ * @post isValid(return) == true
+ * @ingroup capi
+ */
+sfcgal_geometry_t *
+sfcgal_geometry_alpha_shapes(const sfcgal_geometry_t *geom, double alpha,
+                             bool allow_holes);
+
+/**
+ * Returns the optimal alpha shapes of geom
+ * @pre isValid(geom) == true
+ * @pre alpha >= 0
+ * @pre nb_components >= 0
+ * @post isValid(return) == true
+ * @ingroup capi
+ */
+sfcgal_geometry_t *
+sfcgal_geometry_optimal_alpha_shapes(const sfcgal_geometry_t *geom,
+                                     bool allow_holes, size_t nb_components);
 /*--------------------------------------------------------------------------------------*
  *
  * Error handling
