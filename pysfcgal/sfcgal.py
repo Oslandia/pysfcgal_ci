@@ -379,7 +379,13 @@ class GeometryCollectionBase(Geometry):
 
     def __len__(self):
         return len(self.geoms)
-
+    
+    def __iter__(self):
+        for n in range(0, len(self)):
+            yield wrap_geom(
+                lib.sfcgal_geometry_collection_geometry_n(self._geom, n),
+                owned=False,
+            )
 
 class MultiPoint(GeometryCollectionBase):
     def __init__(self, coords=None):
