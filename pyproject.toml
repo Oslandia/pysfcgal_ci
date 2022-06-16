@@ -1,7 +1,20 @@
-[tool.cibuildwheel]
-skip = "cp36-* *_i686 *-musllinux_* *-macosx_* *-win_* *-win32"
-before-all = "yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm && yum install --nogpgcheck -y SFCGAL SFCGAL-devel"
-environment = { CFLAGS = "-I/usr/local/include" }
+[project]
+requires-python = ">=3.7"
 
-#test-requires = ["pytest"]
-#test-command = "pytest {project}"
+[tool.cibuildwheel]
+build = "*-manylinux_{x86_64,i686}"
+manylinux-x86_64-image = "quay.io/pypa/manylinux_2_28_x86_64"
+manylinux-i686-image = "quay.io/pypa/manylinux_2_24_i686"
+
+test-requires = ["pytest"]
+test-command = "pytest {project}"
+
+[[tool.cibuildwheel.overrides]]
+select = "*-manylinux_x86_64"
+before-all = "bash ci/manylinux_2_28_x86_64/before_all_next.sh"
+environment = { CFLAGS = "-I/usr/local/include", LDFLAGS = "-I/usr/local/lib64", LD_LIBRARY_PATH = "/usr/local/lib64" }
+
+[[tool.cibuildwheel.overrides]]
+select = "*-manylinux_i686"
+before-all = "bash ci/manylinux_2_24_i686/before_all_next.sh"
+environment = { CFLAGS = "-I/usr/local/include", LDFLAGS = "-I/usr/local/lib", LD_LIBRARY_PATH = "/usr/local/lib" }
