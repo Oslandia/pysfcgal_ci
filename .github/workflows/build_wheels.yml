@@ -62,6 +62,11 @@ jobs:
           MSYSTEM= /mingw64/bin/python3 setup.py build
           MSYSTEM= /mingw64/bin/python3 setup.py install
 
+      - name: Test package
+        run: |
+          MSYSTEM= /mingw64/bin/pip3 install pytest
+          MSYSTEM= pytest
+
       # - uses: actions/upload-artifact@v2
       #   with:
       #     path: ./wheelhouse/*.whl
