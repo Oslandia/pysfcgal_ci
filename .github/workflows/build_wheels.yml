@@ -3,7 +3,7 @@ name: Build
 on: [push, pull_request]
 
 jobs:
-  build_wheels:
+  build_wheels_linux:
     name: Build wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -16,6 +16,52 @@ jobs:
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.6.1
+      - uses: actions/upload-artifact@v2
+        with:
+          path: ./wheelhouse/*.whl
+
+  build_msys:
+    name: Build package on MSYS2/mingw64
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: 'Setup MSYS2/mingw64'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: mingw64
+          update: true
+          install: >-
+            git
+            make
+          pacboy: >-
+            toolchain:p
+            cmake:p
+            ninja:p
+            cgal:p
+            python:p
+            python-cffi:p
+            python-pip:p
+            python-setuptools:p
+            python-wheel:p
+
+      - name: '🚧 Build SFCGAL'
+        run: |
+          MSYSTEM= git clone https://gitlab.com/Oslandia/SFCGAL.git
+          MSYSTEM= cd SFCGAL
+          MSYSTEM= cmake -G"Ninja" -B build -DCMAKE_BUILD_TYPE=Release -DSFCGAL_BUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=D:/a/_temp/msys64/mingw64
+          MSYSTEM= cmake --build build
+          MSYSTEM= cmake --install build
+
+      - name: Build package
+        run: |
+          MSYSTEM= /mingw64/bin/python3 setup.py build
+          MSYSTEM= /mingw64/bin/python3 setup.py install
+
       # - uses: actions/upload-artifact@v2
       #   with:
       #     path: ./wheelhouse/*.whl
