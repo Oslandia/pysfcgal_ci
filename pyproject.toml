@@ -1,6 +1,11 @@
 [project]
 name = "PySFCGAL"
+version = "1.5.0"
 requires-python = ">=3.7"
+description="Python binding of SFCGAL."
+license="BSD-2-Clause"
+author=["Loïc Bartoletti (Oslandia) <loic.bartoletti@oslandia.com>"]
+maintainers=["Loïc Bartoletti (Oslandia) <loic.bartoletti@oslandia.com>"]
 
 [tool.cibuildwheel]
 build = "*-manylinux_{x86_64,i686}"
