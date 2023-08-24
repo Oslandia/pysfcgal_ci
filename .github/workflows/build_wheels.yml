@@ -8,7 +8,6 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        #os: [ubuntu-22.04, windows-2019, macos-10.15]
         os: [ubuntu-22.04]
 
     steps:
@@ -43,19 +42,12 @@ jobs:
             cmake:p
             ninja:p
             cgal:p
+            sfcgal:p
             python:p
             python-cffi:p
             python-pip:p
             python-setuptools:p
             python-wheel:p
-
-      - name: '🚧 Build SFCGAL'
-        run: |
-          MSYSTEM= git clone https://gitlab.com/Oslandia/SFCGAL.git
-          MSYSTEM= cd SFCGAL
-          MSYSTEM= cmake -G"Ninja" -B build -DCMAKE_BUILD_TYPE=Release -DSFCGAL_BUILD_TESTS=ON -DCMAKE_INSTALL_PREFIX=D:/a/_temp/msys64/mingw64
-          MSYSTEM= cmake --build build
-          MSYSTEM= cmake --install build
 
       - name: Build package
         run: |
@@ -67,6 +59,6 @@ jobs:
           MSYSTEM= /mingw64/bin/pip3 install pytest
           MSYSTEM= pytest
 
-      # - uses: actions/upload-artifact@v2
-      #   with:
-      #     path: ./wheelhouse/*.whl
+      - uses: actions/upload-artifact@v2
+        with:
+          path: ./wheelhouse/*.whl
