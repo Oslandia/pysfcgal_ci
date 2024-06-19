@@ -403,8 +403,8 @@ class Geometry:
     def hexwkb(self):
         return write_wkb(self._geom, True)
 
-    def vtk(self, filename: str):
-        return lib.sfcgal_geometry_as_vtk(self._geom, bytes(filename, 'utf-8'))
+    def vtk(self, filename: str) -> None:
+        lib.sfcgal_geometry_as_vtk(self._geom, bytes(filename, 'utf-8'))
 
     def __del__(self):
         if self._owned:
