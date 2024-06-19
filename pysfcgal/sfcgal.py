@@ -249,7 +249,7 @@ class Geometry:
         return lib.sfcgal_geometry_orientation(self._geom)
 
     @cond_icontract('require', lambda self: self.is_valid())
-    def round(self, r) -> float:
+    def round(self, r: int) -> float:
         geom = lib.sfcgal_geometry_round(self._geom, r)
         return wrap_geom(geom)
 
