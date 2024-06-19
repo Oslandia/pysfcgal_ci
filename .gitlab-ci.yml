@@ -19,6 +19,21 @@ lint:flake8:
   script:
     - flake8 pysfcgal/ tests/ --config=setup.cfg
 
+lint:mypy:
+  stage: 🐍 lint
+  image: python:3.12-slim-bullseye
+  only:
+    refs:
+      - merge_requests
+      - master
+    changes:
+      - "pysfcgal/*.py"
+      - ".gitlab-ci.yml"
+  before_script:
+    - python -m pip install -U mypy
+  script:
+    - mypy pysfcgal/
+
 build:windows-osgeo4w:
   stage: 📦 build
   tags:
