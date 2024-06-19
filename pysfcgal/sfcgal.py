@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Optional, Union
 from ._sfcgal import ffi, lib
 import platform
 
@@ -101,6 +102,9 @@ def write_wkb(geom, asHex=False):
 
 
 class Geometry:
+    _geom: Optional[Union[
+        GeometryCollection, LineString, MultiLineString, MultiPoint, MultiPolygon,
+        Point, Polygon, PolyhedralSurface, Solid, Tin, Triangle]] = None
     _owned = True
 
     @cond_icontract('require', lambda self, other: self.is_valid())
