@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Optional, Union
+from typing import Optional, Tuple, Union
 from ._sfcgal import ffi, lib
 import platform
 
@@ -237,7 +237,7 @@ class Geometry:
     def is_valid(self) -> bool:
         return lib.sfcgal_geometry_is_valid(self._geom) != 0
 
-    def is_valid_detail(self) -> str:
+    def is_valid_detail(self) -> Tuple[str, None]:
         invalidity_reason = ffi.new("char **")
         invalidity_location = ffi.new("sfcgal_geometry_t **")
         lib.sfcgal_geometry_is_valid_detail(
