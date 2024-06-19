@@ -392,7 +392,7 @@ class Geometry:
     def wkt(self):
         return write_wkt(self._geom)
 
-    def wktDecim(self, decim=8) -> str:
+    def wktDecim(self, decim: int = 8) -> str:
         return write_wkt(self._geom, decim)
 
     @property
