@@ -16,6 +16,7 @@ Make sure your code *roughly* follows [PEP-8](https://www.python.org/dev/peps/pe
 
 - sorted imports: [isort](https://pycqa.github.io/isort/) is used to sort imports
 - static analysis: [flake8](https://flake8.pycqa.org/en/latest/) is used to catch some dizziness and keep the source code healthy.
+- static typing: [mypy](https://www.mypy-lang.org/) is used to have static type checks.
 
 ## Commit linter
 

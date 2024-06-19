@@ -36,6 +36,21 @@ lint:commit:
     refs:
       - merge_requests
 
+lint:mypy:
+  stage: 🐍 lint
+  image: ${PYTHON_DOCKER_IMAGE}
+  only:
+    refs:
+      - merge_requests
+      - master
+    changes:
+      - "pysfcgal/*.py"
+      - ".gitlab-ci.yml"
+  before_script:
+    - python -m pip install -U mypy types-cffi typing-extensions
+  script:
+    - mypy pysfcgal/
+
 test:unit:
   stage: 🤞 test
   image: ${SFCGAL_REGISTRY}:debian-latest
