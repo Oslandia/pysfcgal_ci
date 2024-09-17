@@ -103,6 +103,10 @@ def write_wkb(geom, asHex=False):
 class Geometry:
     _owned = True
 
+    def __init__(self, geom_c_data=None):
+        if geom_c_data:
+            self._geom = ffi.gc(geom_c_data, lib.sfcgal_geometry_delete)
+
     @cond_icontract('require', lambda self, other: self.is_valid())
     @cond_icontract('require', lambda self, other: other.is_valid())
     def distance(self, other: Geometry) -> float:
@@ -411,7 +415,7 @@ class Geometry:
             # only free geometries owned by the class
             # this isn't the case when working with geometries contained by
             # a collection (e.g. a GeometryCollection)
-            lib.sfcgal_geometry_delete(self._geom)
+            ffi.release(self._geom)
 
     def __str__(self):
         return self.wktDecim()
@@ -421,13 +425,15 @@ class Point(Geometry):
     def __init__(self, x, y, z=None, m=None):
         # TODO: support coordinates as a list
         if z is None and m is None:
-            self._geom = point_from_coordinates([x, y])
+            geom_c_data = point_from_coordinates([x, y])
         elif z is not None and m is None:
-            self._geom = point_from_coordinates([x, y, z])
+            geom_c_data = point_from_coordinates([x, y, z])
         elif z is None and m is not None:
-            self._geom = point_from_coordinates([x, y, z, m])
+            geom_c_data = point_from_coordinates([x, y, z, m])
         else:
-            self._geom = point_from_coordinates([x, y, z, m])
+            geom_c_data = point_from_coordinates([x, y, z, m])
+
+        super().__init__(geom_c_data)
 
     def __eq__(self, other: Point) -> bool:
         """Two points are equals if their dimension and coordinates are equals
@@ -469,7 +475,8 @@ class Point(Geometry):
 
 class LineString(Geometry):
     def __init__(self, coords):
-        self._geom = linestring_from_coordinates(coords)
+        geom_c_data = linestring_from_coordinates(coords)
+        super().__init__(geom_c_data)
 
     def __eq__(self, other: LineString) -> bool:
         """Two LineStrings are equals if they contain the same points in the same order.
@@ -705,22 +712,22 @@ class GeometryCollectionBase(Geometry):
 
 class MultiPoint(GeometryCollectionBase):
     def __init__(self, coords=None):
-        self._geom = multipoint_from_coordinates(coords)
+        self._geom = self._create_owned_geometry(multipoint_from_coordinates(coords))
 
 
 class MultiLineString(GeometryCollectionBase):
     def __init__(self, coords=None):
-        self._geom = multilinestring_from_coordinates(coords)
+        self._geom = self._create_owned_geometry(multilinestring_from_coordinates(coords))
 
 
 class MultiPolygon(GeometryCollectionBase):
     def __init__(self, coords=None):
-        self._geom = multipolygon_from_coordinates(coords)
+        self._geom = self._create_owned_geometry(multipolygon_from_coordinates(coords))
 
 
 class Tin(GeometryCollectionBase):
     def __init__(self, coords=None):
-        self._geom = tin_from_coordinates(coords)
+        self._geom = self._create_owned_geometry(tin_from_coordinates(coords))
 
     def __len__(self):
         return lib.sfcgal_triangulated_surface_num_triangles(self._geom)
@@ -769,7 +776,8 @@ class Triangle(Geometry):
     # def __init__(self, a, b, c):
     #     self._geom = lib.sfcgal_triangle_create_from_points(a._geom, b._geom, c._geom)
     def __init__(self, coords=None):
-        self._geom = triangle_from_coordinates(coords)
+        geom_c_data = triangle_from_coordinates(coords)
+        super().__init__(geom_c_data)
 
     @property
     def coords(self):
@@ -943,7 +951,8 @@ class Solid(GeometryCollectionBase):
 
 class GeometryCollection(GeometryCollectionBase):
     def __init__(self):
-        self._geom = lib.sfcgal_geometry_collection_create()
+        geom_c_data = lib.sfcgal_geometry_collection_create()
+        Geometry.__init__(geom_c_data)
 
     def addGeometry(self, geometry):
         clone = lib.sfcgal_geometry_clone(geometry._geom)
