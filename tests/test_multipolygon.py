@@ -60,3 +60,9 @@ def test_multipolygon_equality(
 ):
     assert multipolygon != other_multipolygon
     assert multipolygon != multipolygon_unordered  # the order is important
+
+
+def test_multipolygon_to_coordinates(multipolygon, ext_ring1, int_ring1, int_ring2):
+    assert multipolygon.to_coordinates() == [[ext_ring1], [int_ring1], [int_ring2]]
+    cloned_multipolygon = MultiPolygon(multipolygon.to_coordinates())
+    assert cloned_multipolygon == multipolygon

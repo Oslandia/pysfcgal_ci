@@ -104,3 +104,7 @@ def test_solid_to_polyhedralsurface(solid, composed_polyhedralsurface):
     assert not phs.is_valid()  # PolyhedralSurface with interior shells
     assert phs.geom_type == "PolyhedralSurface"
     assert phs == composed_polyhedralsurface
+
+
+def test_solid_to_coordinates(solid, points_ext, points_int_1, points_int_2):
+    assert solid.to_coordinates() == [points_ext, points_int_1, points_int_2]

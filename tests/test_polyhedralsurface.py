@@ -56,3 +56,9 @@ def test_polyhedralsurface_equality(
     assert not other_polyhedralsurface.is_valid()
     assert polyhedralsurface != other_polyhedralsurface
     assert polyhedralsurface != polyhedralsurface_unordered
+
+
+def test_polyhedralsurface_to_coordinates(polyhedralsurface, c0, c1, c2, c3):
+    assert polyhedralsurface.to_coordinates() == [
+        [[c0, c1, c2, c0]], [[c0, c1, c3, c0]], [[c0, c2, c3, c0]], [[c1, c2, c3, c1]]
+    ]

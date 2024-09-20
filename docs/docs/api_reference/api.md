@@ -28,16 +28,4 @@
 ::: pysfcgal.sfcgal.geometry_collection_from_coordinates
 ::: pysfcgal.sfcgal.polyhedralsurface_from_coordinates
 ::: pysfcgal.sfcgal.solid_from_coordinates
-::: pysfcgal.sfcgal.mapping
-::: pysfcgal.sfcgal.point_to_coordinates
-::: pysfcgal.sfcgal.linestring_to_coordinates
-::: pysfcgal.sfcgal.polygon_to_coordinates
-::: pysfcgal.sfcgal.multipoint_to_coordinates
-::: pysfcgal.sfcgal.multilinestring_to_coordinates
-::: pysfcgal.sfcgal.multipolygon_to_coordinates
-::: pysfcgal.sfcgal.geometrycollection_to_coordinates
-::: pysfcgal.sfcgal.triangle_to_coordinates
-::: pysfcgal.sfcgal.tin_to_coordinates
-::: pysfcgal.sfcgal.polyhedralsurface_to_coordinates
-::: pysfcgal.sfcgal.solid_to_coordinates
 ::: pysfcgal.sfcgal.is_segment_in_coordsequence

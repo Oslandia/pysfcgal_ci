@@ -19,7 +19,7 @@ geometry_names, geometry_values = zip(*geom_data.data.items())
 def test_integrity(geometry):
     """Test conversion from and to GeoJSON-like data"""
     geom = sfcgal.shape(geometry)
-    data = sfcgal.mapping(geom)
+    data = geom.to_dict()
     assert geometry == data
 
 
@@ -28,7 +28,7 @@ def test_wkt_write(geometry):
     geom = sfcgal.shape(geometry)
     wkt = geom.wkt
     assert wkt
-    data = sfcgal.mapping(sfcgal.read_wkt(wkt))
+    data = sfcgal.read_wkt(wkt).to_dict()
     assert geometry == data
 
 
