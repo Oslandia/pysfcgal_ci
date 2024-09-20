@@ -64,6 +64,12 @@ def test_tin_wkt(tin, tin_coordinates):
     )
 
 
+def test_tin_to_coordinates(tin, tin_coordinates):
+    assert tin.to_coordinates() == tin_coordinates
+    cloned_tin = Tin(tin_coordinates)
+    assert cloned_tin == tin
+
+
 def test_tin_to_multipolygon(tin, expected_multipolygon):
     multipoly = tin.to_multipolygon(wrapped=True)
     assert multipoly.geom_type == "MultiPolygon"

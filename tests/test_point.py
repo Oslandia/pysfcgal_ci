@@ -54,8 +54,11 @@ def test_point_to_coordinates(point_fixture, coordinates, request):
     if point_fixture == "point_4d":
         assert point.has_m
         assert point.m == coordinates[3]
+    assert point.to_coordinates() == coordinates
 
 
 def test_point_equivalence(point_2d, point_3d, point_3dm):
     assert not point_2d == point_3d
     assert not point_3dm == point_3d
+    other_point = Point(*point_3d.to_coordinates())
+    assert other_point == point_3d

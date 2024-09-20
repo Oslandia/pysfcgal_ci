@@ -469,6 +469,28 @@ class Geometry:
         geometry._owned = owned
         return geometry
 
+    def to_coordinates(self):
+        """Generates the coordinates of the Geometry.
+
+        Raises
+        ------
+        NotImplementedError
+            The method must be implemented only in child classes.
+        """
+        raise NotImplementedError(
+            "to_coordinates is implemented only for child classes!"
+        )
+
+    def to_dict(self) -> dict:
+        """Generates a geojson-like dictionary that represents the Geometry.
+
+        This dictionary contains a 'type' key which depicts the geometry type
+        (e.g. Point, MultiLineString, Tin, ...) and a 'coordinates' key that contains
+        the geometry point coordinates.
+
+        """
+        return {"type": self.geom_type, "coordinates": self.to_coordinates()}
+
 
 class Point(Geometry):
     def __init__(self, x, y, z=None, m=None):
@@ -518,6 +540,21 @@ class Point(Geometry):
             return lib.sfcgal_point_m(self._geom)
         else:
             raise DimensionError("This point has no m coordinate.")
+
+    def to_coordinates(self) -> tuple:
+        """Generates the coordinates of the Point.
+
+        Returns
+        -------
+        tuple
+            Two, three or four floating points depending on the point nature.
+        """
+        coords = (self.x, self.y)
+        if self.has_z:
+            coords += (self.z,)
+        if self.has_m:
+            coords += (self.m,)
+        return coords
 
 
 class LineString(Geometry):
@@ -595,8 +632,19 @@ class LineString(Geometry):
         return CoordinateSequence(self)
 
     def has_edge(self, point_a: Point, point_b: Point) -> bool:
-        ls_coordinates = linestring_to_coordinates(self._geom)
-        return is_segment_in_coordsequence(ls_coordinates, point_a, point_b)
+        return is_segment_in_coordsequence(self.to_coordinates(), point_a, point_b)
+
+    def to_coordinates(self) -> list:
+        """Generates the coordinates of the LineString.
+
+        Uses the __iter__ property of the LineString to iterate over points.
+
+        Returns
+        -------
+        list
+            List of point coordinates.
+        """
+        return [point.to_coordinates() for point in self]
 
 
 class Polygon(Geometry):
@@ -698,9 +746,19 @@ class Polygon(Geometry):
         return self.rings[n]
 
     def has_exterior_edge(self, point_a: Point, point_b: Point) -> bool:
-        poly_coordinates = polygon_to_coordinates(self._geom)
+        poly_coordinates = self.to_coordinates()
         exterior_coordinates = poly_coordinates[0]
         return is_segment_in_coordsequence(exterior_coordinates, point_a, point_b)
+
+    def to_coordinates(self) -> list:
+        """Generates the coordinates of the Polygon.
+
+        Returns
+        -------
+        list
+            List of the polygon ring coordinates
+        """
+        return [ring.to_coordinates() for ring in self.rings]
 
 
 class CoordinateSequence:
@@ -718,7 +776,7 @@ class CoordinateSequence:
 
     def __get_coord_n(self, n):
         point_n = lib.sfcgal_linestring_point_n(self._parent._geom, n)
-        return point_to_coordinates(point_n)
+        return Point.from_sfcgal_geometry(point_n).to_coordinates()
 
     def __getitem__(self, key):
         length = self.__len__()
@@ -758,6 +816,18 @@ class GeometryCollectionBase(Geometry):
 
     def __eq__(self, other):
         return self.geoms == other.geoms
+
+    def to_coordinates(self):
+        """Generates the coordinates for every geometry collection.
+
+        Uses the __iter__ property of the class to iterate over the geometries.
+
+        Returns
+        -------
+        list
+            List of the coordinates of each geometry in the collection
+        """
+        return [geom.to_coordinates() for geom in self]
 
 
 class MultiPoint(GeometryCollectionBase):
@@ -842,7 +912,7 @@ class Triangle(Geometry):
 
     @property
     def coords(self):
-        return triangle_to_coordinates(self._geom)
+        return self.to_coordinates()
 
     def __iter__(self):
         for n in range(3):
@@ -892,6 +962,18 @@ class Triangle(Geometry):
             lib.sfcgal_linestring_add_point(exterior, lib.sfcgal_geometry_clone(point))
         polygon = lib.sfcgal_polygon_create_from_exterior_ring(exterior)
         return Geometry.from_sfcgal_geometry(polygon) if wrapped else polygon
+
+    def to_coordinates(self):
+        """Generates the coordinates of the Triangle.
+
+        Uses the __iter__ property of the Triangle to iterate over vertices.
+
+        Returns
+        -------
+        list
+            List of the vertex coordinates
+        """
+        return [vertex.to_coordinates() for vertex in self]
 
 
 class PolyhedralSurface(GeometryCollectionBase):
@@ -1043,6 +1125,24 @@ class GeometryCollection(GeometryCollectionBase):
             isinstance(other_geom, type(geom)) and geom == other_geom
             for geom, other_geom in zip(self, other)
         )
+
+    def to_dict(self) -> dict:
+        """Generates a geojson-like dict representation of the GeometryCollection.
+
+        This case differs from the general case, as the dictionary contains 'type' and
+        'geometries' keys instead of 'type' and 'coordinates'. The 'geometries' key
+        refers to the list of the dictionary representations of the geometries that
+        belong the collection.
+
+        Returns
+        -------
+        dict
+            Geojson-like representation of the geometry collection
+
+        """
+        return {
+            "type": self.geom_type, "geometries": [geom.to_dict() for geom in self]
+        }
 
 
 class GeometrySequence:
@@ -1281,140 +1381,6 @@ geom_types = {
     "SOLID": lib.SFCGAL_TYPE_SOLID,
 }
 geom_types_r = dict((v, k) for k, v in geom_types.items())
-
-
-def mapping(geometry):
-    geom_type_id = lib.sfcgal_geometry_type_id(geometry._geom)
-    try:
-        geom_type = geom_types_r[geom_type_id]
-    except KeyError:
-        raise ValueError("Unknown geometry type: {}".format(geom_type_id))
-    if geom_type == "GeometryCollection":
-        ret = {
-            "type": geom_type,
-            "geometries": factories_type_to_coords[geom_type](geometry._geom),
-        }
-    else:
-        ret = {
-            "type": geom_type,
-            "coordinates": factories_type_to_coords[geom_type](geometry._geom),
-        }
-    return ret
-
-
-def point_to_coordinates(geometry):
-    x = lib.sfcgal_point_x(geometry)
-    y = lib.sfcgal_point_y(geometry)
-    if lib.sfcgal_geometry_is_3d(geometry):
-        z = lib.sfcgal_point_z(geometry)
-        return (x, y, z)
-    else:
-        return (x, y)
-
-
-def linestring_to_coordinates(geometry):
-    num_points = lib.sfcgal_linestring_num_points(geometry)
-    coords = []
-    for n in range(0, num_points):
-        point = lib.sfcgal_linestring_point_n(geometry, n)
-        coords.append(point_to_coordinates(point))
-    return coords
-
-
-def polygon_to_coordinates(geometry):
-    coords = []
-    exterior = lib.sfcgal_polygon_exterior_ring(geometry)
-    coords.append(linestring_to_coordinates(exterior))
-    num_interior = lib.sfcgal_polygon_num_interior_rings(geometry)
-    for n in range(0, num_interior):
-        interior = lib.sfcgal_polygon_interior_ring_n(geometry, n)
-        coords.append(linestring_to_coordinates(interior))
-    return coords
-
-
-def multipoint_to_coordinates(geometry):
-    num_geoms = lib.sfcgal_geometry_collection_num_geometries(geometry)
-    coords = []
-    for n in range(0, num_geoms):
-        point = lib.sfcgal_geometry_collection_geometry_n(geometry, n)
-        coords.append(point_to_coordinates(point))
-    return coords
-
-
-def multilinestring_to_coordinates(geometry):
-    num_geoms = lib.sfcgal_geometry_collection_num_geometries(geometry)
-    coords = []
-    for n in range(0, num_geoms):
-        linestring = lib.sfcgal_geometry_collection_geometry_n(geometry, n)
-        coords.append(linestring_to_coordinates(linestring))
-    return coords
-
-
-def multipolygon_to_coordinates(geometry):
-    num_geoms = lib.sfcgal_geometry_collection_num_geometries(geometry)
-    coords = []
-    for n in range(0, num_geoms):
-        polygon = lib.sfcgal_geometry_collection_geometry_n(geometry, n)
-        coords.append(polygon_to_coordinates(polygon))
-    return coords
-
-
-def geometrycollection_to_coordinates(geometry):
-    num_geoms = lib.sfcgal_geometry_collection_num_geometries(geometry)
-    geoms = []
-    for n in range(0, num_geoms):
-        geom = lib.sfcgal_geometry_collection_geometry_n(geometry, n)
-        geom_type_id = lib.sfcgal_geometry_type_id(geom)
-        geom_type = geom_types_r[geom_type_id]
-        coords = factories_type_to_coords[geom_type](geom)
-        geoms.append({"type": geom_type, "coordinates": coords})
-    return geoms
-
-
-def triangle_to_coordinates(geometry):
-    coords = []
-    for n in range(0, 3):
-        point = lib.sfcgal_triangle_vertex(geometry, n)
-        coords.append(point_to_coordinates(point))
-    return coords
-
-
-def tin_to_coordinates(geometry):
-    num_geoms = lib.sfcgal_triangulated_surface_num_triangles(geometry)
-    coords = []
-    for n in range(0, num_geoms):
-        triangle = lib.sfcgal_triangulated_surface_triangle_n(geometry, n)
-        coords.append(triangle_to_coordinates(triangle))
-    return coords
-
-
-def polyhedralsurface_to_coordinates(geometry):
-    num_geoms = lib.sfcgal_polyhedral_surface_num_polygons(geometry)
-    coords = []
-    for n in range(0, num_geoms):
-        polygon = lib.sfcgal_polyhedral_surface_polygon_n(geometry, n)
-        coords.append(polygon_to_coordinates(polygon))
-    return coords
-
-
-def solid_to_coordinates(geometry):
-    coords = []
-    return coords
-
-
-factories_type_to_coords = {
-    "Point": point_to_coordinates,
-    "LineString": linestring_to_coordinates,
-    "Polygon": polygon_to_coordinates,
-    "MultiPoint": multipoint_to_coordinates,
-    "MultiLineString": multilinestring_to_coordinates,
-    "MultiPolygon": multipolygon_to_coordinates,
-    "GeometryCollection": geometrycollection_to_coordinates,
-    "Triangle": triangle_to_coordinates,
-    "TIN": tin_to_coordinates,
-    "PolyhedralSurface": polyhedralsurface_to_coordinates,
-    "SOLID": solid_to_coordinates,
-}
 
 
 def is_segment_in_coordsequence(coords: list, point_a: Point, point_b: Point) -> bool:

@@ -47,3 +47,9 @@ def test_triangle_to_polygon(triangle, expected_polygon):
     assert polygon.is_valid()
     assert polygon.geom_type == "Polygon"
     assert polygon == expected_polygon
+
+
+def test_triangle_to_coordinates(triangle, c0, c1, c2):
+    assert triangle.to_coordinates() == [c0, c1, c2]
+    cloned_triangle = Triangle(triangle.to_coordinates())
+    assert cloned_triangle == triangle

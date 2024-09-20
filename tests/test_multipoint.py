@@ -40,3 +40,9 @@ def test_multipoint_equality(multipoint, other_multipoint, multipoint_unordered)
     assert multipoint[1:] == other_multipoint[:2]
     # the point order is important (be compliant with other GIS softwares)
     assert multipoint != multipoint_unordered
+
+
+def test_multipoint_to_coordinates(multipoint, c0, c1, c2):
+    assert multipoint.to_coordinates() == [c0, c1, c2]
+    cloned_multipoint = MultiPoint(multipoint.to_coordinates())
+    assert cloned_multipoint == multipoint

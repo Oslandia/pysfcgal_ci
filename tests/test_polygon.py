@@ -90,6 +90,12 @@ def test_polygon_equality(polygon_with_hole, polygon1, polygon_with_hole_unclose
     assert polygon_with_hole != polygon1
 
 
+def test_polygon_to_coordinates(polygon1, ext_ring1):
+    assert polygon1.to_coordinates() == [ext_ring1]
+    cloned_polygon = Polygon(*polygon1.to_coordinates())
+    assert cloned_polygon == polygon1
+
+
 def test_point_in_polygon(point_in_poly, polygon1, polygon2):
     """Tests the intersection between a point and a polygon"""
     point = Point(2, 3)

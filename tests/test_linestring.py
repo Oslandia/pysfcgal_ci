@@ -25,6 +25,16 @@ def test_linestring_len(linestring, expected_length):
     assert len(linestring) == expected_length
 
 
+def test_linestring_to_coordinates(long_line, c0, c1, c2, c3):
+    coords = long_line.to_coordinates()
+    assert len(coords) == 4
+    assert coords[0] == c0
+    assert coords[-1] == c3
+    assert coords[0:2] == [c0, c1]
+    cloned_linestring = LineString(coords)
+    assert cloned_linestring == long_line
+
+
 def test_linestring_eq(line, line2):
     assert line != line2
     assert line != line2[:-1]
