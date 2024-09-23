@@ -61,3 +61,9 @@ def test_geometry_collection_equality(
 def test_geometry_collection_to_coordinates(collection, c0, c1, c2, c3):
     assert collection.to_coordinates() == [c0, [c1, c2, c3], [[c0, c1, c2, c0]]]
     # Can't test the clone, as GeometryCollection can't be instantiated from coordinates
+
+
+def test_geometry_collection_to_dict(collection):
+    collection_data = collection.to_dict()
+    other_collection = GeometryCollection.from_dict(collection_data)
+    assert collection == other_collection

@@ -66,3 +66,11 @@ def test_multipolygon_to_coordinates(multipolygon, ext_ring1, int_ring1, int_rin
     assert multipolygon.to_coordinates() == [[ext_ring1], [int_ring1], [int_ring2]]
     cloned_multipolygon = MultiPolygon(multipolygon.to_coordinates())
     assert cloned_multipolygon == multipolygon
+    other_multipolygon = MultiPolygon.from_coordinates(multipolygon.to_coordinates())
+    assert other_multipolygon == multipolygon
+
+
+def test_multipolygon_to_dict(multipolygon):
+    multipolygon_data = multipolygon.to_dict()
+    other_multipolygon = MultiPolygon.from_dict(multipolygon_data)
+    assert other_multipolygon == multipolygon

@@ -62,6 +62,14 @@ def test_polyhedralsurface_to_coordinates(polyhedralsurface, c0, c1, c2, c3):
     assert polyhedralsurface.to_coordinates() == [
         [[c0, c1, c2, c0]], [[c0, c1, c3, c0]], [[c0, c2, c3, c0]], [[c1, c2, c3, c1]]
     ]
+    other_phs = PolyhedralSurface.from_coordinates(polyhedralsurface.to_coordinates())
+    assert other_phs == polyhedralsurface
+
+
+def test_polyhedralsurface_to_dict(polyhedralsurface):
+    polyhedralsurface_data = polyhedralsurface.to_dict()
+    other_polyhedralsurface = PolyhedralSurface.from_dict(polyhedralsurface_data)
+    assert other_polyhedralsurface == polyhedralsurface
 
 
 def test_to_solid():

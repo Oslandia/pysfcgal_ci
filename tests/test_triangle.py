@@ -53,3 +53,11 @@ def test_triangle_to_coordinates(triangle, c0, c1, c2):
     assert triangle.to_coordinates() == [c0, c1, c2]
     cloned_triangle = Triangle(triangle.to_coordinates())
     assert cloned_triangle == triangle
+    other_triangle = Triangle.from_coordinates(triangle.to_coordinates())
+    assert other_triangle == triangle
+
+
+def test_triangle_to_dict(triangle):
+    triangle_data = triangle.to_dict()
+    other_triangle = Triangle.from_dict(triangle_data)
+    assert other_triangle == triangle

@@ -18,14 +18,18 @@ geometry_names, geometry_values = zip(*geom_data.data.items())
 @pytest.mark.parametrize("geometry", geometry_values, ids=geometry_names)
 def test_integrity(geometry):
     """Test conversion from and to GeoJSON-like data"""
-    geom = sfcgal.shape(geometry)
+    geom_type = geometry["type"]
+    geometry_cls = sfcgal.geom_type_to_cls[sfcgal.geom_types[geom_type]]
+    geom = geometry_cls.from_dict(geometry)
     data = geom.to_dict()
     assert geometry == data
 
 
 @pytest.mark.parametrize("geometry", geometry_values, ids=geometry_names)
 def test_wkt_write(geometry):
-    geom = sfcgal.shape(geometry)
+    geom_type = geometry["type"]
+    geometry_cls = sfcgal.geom_type_to_cls[sfcgal.geom_types[geom_type]]
+    geom = geometry_cls.from_dict(geometry)
     wkt = geom.wkt
     assert wkt
     data = sfcgal.read_wkt(wkt).to_dict()

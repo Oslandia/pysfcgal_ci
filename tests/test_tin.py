@@ -68,9 +68,17 @@ def test_tin_to_coordinates(tin, tin_coordinates):
     assert tin.to_coordinates() == tin_coordinates
     cloned_tin = Tin(tin_coordinates)
     assert cloned_tin == tin
+    other_tin = Tin.from_coordinates(tin.to_coordinates())
+    assert other_tin == tin
 
 
 def test_tin_to_multipolygon(tin, expected_multipolygon):
     multipoly = tin.to_multipolygon(wrapped=True)
     assert multipoly.geom_type == "MultiPolygon"
     assert multipoly == expected_multipolygon
+
+
+def test_tin_to_dict(tin):
+    tin_data = tin.to_dict()
+    other_tin = Tin.from_dict(tin_data)
+    assert other_tin == tin

@@ -509,6 +509,50 @@ class Geometry:
         """
         return {"type": self.geom_type, "coordinates": self.to_coordinates()}
 
+    @classmethod
+    def from_coordinates(cls, coordinates: list) -> Geometry:
+        """Instantiates a Geometry starting from a list of coordinates.
+
+        The geometry class may be Point, LineString, Polygon, ...
+
+        Parameters
+        ----------
+        coordinates: list
+            Geometry coordinates, the list structure depends on the geometry type.
+
+        Returns
+        -------
+        Geometry
+            An instance of the corresponding geometry type
+        """
+        return cls(coordinates)
+
+    @classmethod
+    def from_dict(cls, geojson_data: dict) -> Geometry:
+        """Instantiates a Geometry starting from a geojson-like dictionnary.
+
+        The dictionary must contain 'type' and 'coordinates' keys; the 'type' value
+        should be a valid geometry descriptor.
+
+        The geometry class with which the method is called may be Point, LineString,
+        Polygon, ...
+
+        Parameters
+        ----------
+        geojson_data: dict
+            Geometry description, in a geojson-like format
+
+        Returns
+        -------
+        Geometry
+            An instance of the corresponding geometry type
+        """
+        if geojson_data.get("type") is None:
+            raise KeyError("There is no 'type' key in the provided data.")
+        if geojson_data.get("coordinates") is None:
+            raise KeyError("There is no 'coordinates' key in the provided data.")
+        return cls.from_coordinates(geojson_data["coordinates"])
+
 
 class Point(Geometry):
     """Point
@@ -523,15 +567,7 @@ class Point(Geometry):
         are done at the SFCGAL lower level.
     """
     def __init__(self, x, y, z=None, m=None):
-        # TODO: support coordinates as a list
-        if z is None and m is None:
-            self._geom = point_from_coordinates([x, y])
-        elif z is not None and m is None:
-            self._geom = point_from_coordinates([x, y, z])
-        elif z is None and m is not None:
-            self._geom = point_from_coordinates([x, y, z, m])
-        else:
-            self._geom = point_from_coordinates([x, y, z, m])
+        self._geom = self.sfcgal_geom_from_coordinates([x, y, z, m])
 
     def __eq__(self, other: Point) -> bool:
         """Two points are equals if their dimension and coordinates are equals
@@ -579,16 +615,72 @@ class Point(Geometry):
             Two, three or four floating points depending on the point nature.
         """
         coords = (self.x, self.y)
-        if self.has_z:
-            coords += (self.z,)
         if self.has_m:
-            coords += (self.m,)
+            coords += (self.z if self.has_z else None, self.m)
+        elif self.has_z:
+            coords += (self.z,)
         return coords
+
+    @classmethod
+    def from_coordinates(cls, coordinates: list) -> Point:
+        """Instantiates a Point starting from a list of coordinates.
+
+        Parameters
+        ----------
+        coordinates: list
+            Point coordinates.
+
+        Returns
+        -------
+        Point
+            The Point that corresponds to the provided coordinates
+
+        """
+        return cls(*coordinates)
+
+    @staticmethod
+    def sfcgal_geom_from_coordinates(coordinates: list):
+        """Instantiates a SFCGAL Point starting from a list of coordinates.
+
+        Parameters
+        ----------
+        coordinates: list
+            Point coordinates.
+
+        Returns
+        -------
+        _cffi_backend._CDatabase
+            A pointer towards a SFCGAL Point
+
+        """
+        length_coordinates = len(coordinates)
+        if length_coordinates < 2 or length_coordinates > 4:
+            raise DimensionError("Coordinates length must be 2, 3 or 4.")
+
+        if length_coordinates == 2:
+            return lib.sfcgal_point_create_from_xy(*coordinates)
+        elif length_coordinates == 3:
+            return lib.sfcgal_point_create_from_xyz(*coordinates)
+        elif length_coordinates == 4:
+            has_z = coordinates[2] is not None
+            has_m = coordinates[3] is not None
+            if not has_z and not has_m:
+                return lib.sfcgal_point_create_from_xy(coordinates[0], coordinates[1])
+            elif has_z and not has_m:
+                return lib.sfcgal_point_create_from_xyz(
+                    coordinates[0], coordinates[1], coordinates[2]
+                )
+            elif not has_z and has_m:
+                return lib.sfcgal_point_create_from_xym(
+                    coordinates[0], coordinates[1], coordinates[3]
+                )
+            else:
+                return lib.sfcgal_point_create_from_xyzm(*coordinates)
 
 
 class LineString(Geometry):
     def __init__(self, coords):
-        self._geom = linestring_from_coordinates(coords)
+        self._geom = self.sfcgal_geom_from_coordinates(coords)
 
     def __eq__(self, other: LineString) -> bool:
         """Two LineStrings are equals if they contain the same points in the same order.
@@ -675,12 +767,39 @@ class LineString(Geometry):
         """
         return [point.to_coordinates() for point in self]
 
+    @staticmethod
+    def sfcgal_geom_from_coordinates(coordinates: list, close=False):
+        """Instantiates a SFCGAL LineString starting from a list of coordinates.
+
+        Parameters
+        ----------
+        coordinates: list
+            LineString coordinates.
+        close: bool
+            If True, the LineString is built as closed even if the coordinates are not,
+            i.e. the first point is replicated at the last position.
+
+        Returns
+        -------
+        _cffi_backend._CDatabase
+            A pointer towards a SFCGAL LineString
+
+        """
+        linestring = lib.sfcgal_linestring_create()
+        for coordinate in coordinates:
+            cpoint = Point.sfcgal_geom_from_coordinates(coordinate)
+            lib.sfcgal_linestring_add_point(linestring, cpoint)
+        if close and coordinates[0] != coordinates[-1]:
+            cpoint = Point.sfcgal_geom_from_coordinates(coordinates[0])
+            lib.sfcgal_linestring_add_point(linestring, cpoint)
+        return linestring
+
 
 class Polygon(Geometry):
     def __init__(self, exterior, interiors=None):
         if interiors is None:
             interiors = []
-        self._geom = polygon_from_coordinates(
+        self._geom = self.sfcgal_geom_from_coordinates(
             [
                 exterior,
                 *interiors,
@@ -789,6 +908,47 @@ class Polygon(Geometry):
         """
         return [ring.to_coordinates() for ring in self.rings]
 
+    @classmethod
+    def from_coordinates(cls, coordinates: list):
+        """Instantiates a Polygon starting from a list of coordinates.
+
+        Parameters
+        ----------
+        coordinates: list
+            Polygon coordinates. The first item corresponds to the coordinates of the
+            exterior ring, whilst the following items are the coordinates of the
+            interior rings, if they exist.
+
+        Returns
+        -------
+        Polygon
+            The Polygon that corresponds to the provided coordinates
+
+        """
+        return cls(coordinates[0], coordinates[1:] if len(coordinates) > 0 else None)
+
+    @staticmethod
+    def sfcgal_geom_from_coordinates(coordinates: list):
+        """Instantiates a SFCGAL Polygon starting from a list of coordinates.
+
+        Parameters
+        ----------
+        coordinates: list
+            Polygon coordinates.
+
+        Returns
+        -------
+        _cffi_backend._CDatabase
+            A pointer towards a SFCGAL Polygon
+
+        """
+        exterior = LineString.sfcgal_geom_from_coordinates(coordinates[0], True)
+        polygon = lib.sfcgal_polygon_create_from_exterior_ring(exterior)
+        for n in range(1, len(coordinates)):
+            interior = LineString.sfcgal_geom_from_coordinates(coordinates[n], True)
+            lib.sfcgal_polygon_add_interior_ring(polygon, interior)
+        return polygon
+
 
 class CoordinateSequence:
     def __init__(self, parent):
@@ -861,22 +1021,89 @@ class GeometryCollectionBase(Geometry):
 
 class MultiPoint(GeometryCollectionBase):
     def __init__(self, coords=None):
-        self._geom = multipoint_from_coordinates(coords)
+        self._geom = MultiPoint.sfcgal_geom_from_coordinates(coords)
+
+    @staticmethod
+    def sfcgal_geom_from_coordinates(coordinates: list):
+        """Instantiates a SFCGAL MultiPoint starting from a list of coordinates.
+
+        Parameters
+        ----------
+        coordinates: list
+            MultiPoint coordinates.
+
+        Returns
+        -------
+        _cffi_backend._CDatabase
+            A pointer towards a SFCGAL MultiPoint
+
+        """
+        multipoint = lib.sfcgal_multi_point_create()
+        for coords in coordinates:
+            point = Point.sfcgal_geom_from_coordinates(coords)
+            lib.sfcgal_geometry_collection_add_geometry(multipoint, point)
+        return multipoint
 
 
 class MultiLineString(GeometryCollectionBase):
     def __init__(self, coords=None):
-        self._geom = multilinestring_from_coordinates(coords)
+        self._geom = MultiLineString.sfcgal_geom_from_coordinates(coords)
+
+    @staticmethod
+    def sfcgal_geom_from_coordinates(coordinates: list, close=False):
+        """Instantiates a SFCGAL MultiLineString starting from a list of coordinates.
+
+        Parameters
+        ----------
+        coordinates: list
+            MultiLineString coordinates.
+        close: bool
+            If True, the linestrings are built as closed even if their coordinates are
+            not, i.e. their first point is replicated at the last position.
+
+        Returns
+        -------
+        _cffi_backend._CDatabase
+            A pointer towards a SFCGAL MultiLineString
+
+        """
+        multilinestring = lib.sfcgal_multi_linestring_create()
+        for coords in coordinates:
+            linestring = LineString.sfcgal_geom_from_coordinates(coords, close=close)
+            lib.sfcgal_geometry_collection_add_geometry(multilinestring, linestring)
+        return multilinestring
 
 
 class MultiPolygon(GeometryCollectionBase):
     def __init__(self, coords=None):
-        self._geom = multipolygon_from_coordinates(coords)
+        self._geom = MultiPolygon.sfcgal_geom_from_coordinates(coords)
+
+    @staticmethod
+    def sfcgal_geom_from_coordinates(coordinates: list):
+        """Instantiates a SFCGAL MultiPolygon starting from a list of coordinates.
+
+        Parameters
+        ----------
+        coordinates: list
+            MultiPolygon coordinates.
+
+        Returns
+        -------
+        _cffi_backend._CDatabase
+            A pointer towards a SFCGAL MultiPolygon
+
+        """
+        multipolygon = lib.sfcgal_multi_polygon_create()
+        if coordinates:
+            for coords in coordinates:
+                polygon = Polygon.sfcgal_geom_from_coordinates(coords)
+                lib.sfcgal_geometry_collection_add_geometry(multipolygon, polygon)
+        return multipolygon
 
 
 class Tin(GeometryCollectionBase):
     def __init__(self, coords=None):
-        self._geom = tin_from_coordinates(coords)
+        self._geom = Tin.sfcgal_geom_from_coordinates(coords)
 
     def __len__(self):
         return lib.sfcgal_triangulated_surface_num_triangles(self._geom)
@@ -934,10 +1161,31 @@ class Tin(GeometryCollectionBase):
             lib.sfcgal_geometry_collection_add_geometry(multipolygon, polygon)
         return Geometry.from_sfcgal_geometry(multipolygon) if wrapped else multipolygon
 
+    @staticmethod
+    def sfcgal_geom_from_coordinates(coordinates: list):
+        """Instantiates a SFCGAL Tin starting from a list of coordinates.
+
+        Parameters
+        ----------
+        coordinates: list
+            Tin coordinates.
+
+        Returns
+        -------
+        _cffi_backend._CDatabase
+            A pointer towards a SFCGAL Tin
+
+        """
+        tin = lib.sfcgal_triangulated_surface_create()
+        for coords in coordinates:
+            triangle = Triangle.sfcgal_geom_from_coordinates(coords)
+            lib.sfcgal_triangulated_surface_add_triangle(tin, triangle)
+        return tin
+
 
 class Triangle(Geometry):
     def __init__(self, coords=None):
-        self._geom = triangle_from_coordinates(coords)
+        self._geom = Triangle.sfcgal_geom_from_coordinates(coords)
 
     @property
     def coords(self):
@@ -1004,10 +1252,38 @@ class Triangle(Geometry):
         """
         return [vertex.to_coordinates() for vertex in self]
 
+    @staticmethod
+    def sfcgal_geom_from_coordinates(coordinates: list):
+        """Instantiates a SFCGAL Triangle starting from a list of coordinates.
+
+        If the coordinates does not contain three items, an empty Triangle is returned
+
+        Parameters
+        ----------
+        coordinates: list
+            Triangle coordinates.
+
+        Returns
+        -------
+        _cffi_backend._CDatabase
+            A pointer towards a SFCGAL Triangle
+        """
+        triangle = None
+        if coordinates and len(coordinates) == 3:
+            triangle = lib.sfcgal_triangle_create_from_points(
+                Point.sfcgal_geom_from_coordinates(coordinates[0]),
+                Point.sfcgal_geom_from_coordinates(coordinates[1]),
+                Point.sfcgal_geom_from_coordinates(coordinates[2])
+            )
+        else:
+            triangle = lib.sfcgal_triangle_create()
+
+        return triangle
+
 
 class PolyhedralSurface(GeometryCollectionBase):
     def __init__(self, coords=None):
-        self._geom = polyhedralsurface_from_coordinates(coords)
+        self._geom = PolyhedralSurface.sfcgal_geom_from_coordinates(coords)
 
     def __len__(self):
         return lib.sfcgal_polyhedral_surface_num_polygons(self._geom)
@@ -1063,10 +1339,31 @@ class PolyhedralSurface(GeometryCollectionBase):
         geom = lib.sfcgal_geometry_make_solid(self._geom)
         return PolyhedralSurface.from_sfcgal_geometry(geom)
 
+    @staticmethod
+    def sfcgal_geom_from_coordinates(coordinates: list):
+        """Instantiates a SFCGAL PolyhedralSurface starting from a list of coordinates.
+
+        Parameters
+        ----------
+        coordinates: list
+            PolyhedralSurface coordinates.
+
+        Returns
+        -------
+        _cffi_backend._CDatabase
+            A pointer towards a SFCGAL PolyhedralSurface
+
+        """
+        polyhedralsurface = lib.sfcgal_polyhedral_surface_create()
+        for coords in coordinates:
+            polygon = Polygon.sfcgal_geom_from_coordinates(coords)
+            lib.sfcgal_polyhedral_surface_add_polygon(polyhedralsurface, polygon)
+        return polyhedralsurface
+
 
 class Solid(GeometryCollectionBase):
     def __init__(self, coords=None):
-        self._geom = solid_from_coordinates(coords)
+        self._geom = Solid.sfcgal_geom_from_coordinates(coords)
 
     def __iter__(self):
         for n in range(self.n_shells):
@@ -1152,6 +1449,34 @@ class Solid(GeometryCollectionBase):
                 )
         return Geometry.from_sfcgal_geometry(phs_geom) if wrapped else phs_geom
 
+    @staticmethod
+    def sfcgal_geom_from_coordinates(coordinates: list, close=False):
+        """Instantiates a SFCGAL Solid starting from a list of coordinates.
+
+        Parameters
+        ----------
+        coordinates: list
+            Solid coordinates.
+
+        Returns
+        -------
+        _cffi_backend._CDatabase
+            A pointer towards a SFCGAL Solid
+
+        """
+        solid = lib.sfcgal_solid_create()
+        if coordinates:
+            polyhedralsurface = PolyhedralSurface.sfcgal_geom_from_coordinates(
+                coordinates[0]
+            )
+            solid = lib.sfcgal_solid_create_from_exterior_shell(polyhedralsurface)
+            for coords in coordinates[1:]:
+                polyhedralsurface = PolyhedralSurface.sfcgal_geom_from_coordinates(
+                    coords
+                )
+                lib.sfcgal_solid_add_interior_shell(solid, polyhedralsurface)
+        return solid
+
 
 class GeometryCollection(GeometryCollectionBase):
     def __init__(self):
@@ -1165,6 +1490,20 @@ class GeometryCollection(GeometryCollectionBase):
         return all(
             isinstance(other_geom, type(geom)) and geom == other_geom
             for geom, other_geom in zip(self, other)
+        )
+
+    def from_coordinates(self):
+        """Instantiates a Point starting from a list of coordinates.
+
+        Raises
+        ------
+        NotImplementedError
+            This method is not supported (yet?). That's sounds too hard to infer the
+            geometry type from a random coordinates structure.
+
+        """
+        raise NotImplementedError(
+            "The 'from_coordinates' method is not implemented for GeometryCollection."
         )
 
     def to_dict(self) -> dict:
@@ -1184,6 +1523,44 @@ class GeometryCollection(GeometryCollectionBase):
         return {
             "type": self.geom_type, "geometries": [geom.to_dict() for geom in self]
         }
+
+    @classmethod
+    def from_dict(cls, geojson_data: dict) -> GeometryCollection:
+        """Instantiates a GeometryCollection starting from a geojson-like dictionnary.
+
+        The dictionary must contain 'type' and 'geometries' keys; the 'type' value
+        should be 'GeometryCollection'. The 'geometries' values should be a list of
+        valid geojson-like dictionaries that represents the geometries within the
+        collection.
+
+        Parameters
+        ----------
+        geojson_data: dict
+            Description of the collection, in a geojson-like format
+
+        Returns
+        -------
+        GeometryCollection
+            An instance of GeometryCollection
+        """
+        if geojson_data.get("type") is None:
+            raise KeyError("There is no 'type' key in the provided data.")
+        if geojson_data["type"] != "GeometryCollection":
+            raise ValueError(
+                f"The provided 'type' ({geojson_data['type']}) "
+                "should be 'GeometryCollection'."
+            )
+        if geojson_data.get("geometries") is None:
+            raise KeyError("There is no 'geometries' key in the provided data.")
+        collection = lib.sfcgal_geometry_collection_create()
+        for geojson_geometry in geojson_data["geometries"]:
+            geom_type = geojson_geometry["type"]
+            geometry_cls = geom_type_to_cls[geom_types[geom_type]]
+            geometry = geometry_cls.sfcgal_geom_from_coordinates(
+                geojson_geometry["coordinates"]
+            )
+            lib.sfcgal_geometry_collection_add_geometry(collection, geometry)
+        return GeometryCollection.from_sfcgal_geometry(collection)
 
 
 class GeometrySequence:
@@ -1246,166 +1623,6 @@ geom_type_to_cls = {
     lib.SFCGAL_TYPE_TRIANGLE: Triangle,
     lib.SFCGAL_TYPE_POLYHEDRALSURFACE: PolyhedralSurface,
     lib.SFCGAL_TYPE_SOLID: Solid,
-}
-
-
-def shape(geometry):
-    """Creates a PySFCGAL geometry from a GeoJSON-like geometry"""
-    return Geometry.from_sfcgal_geometry(_shape(geometry))
-
-
-def _shape(geometry):
-    """Creates a SFCGAL geometry from a GeoJSON-like geometry"""
-    geom_type = geometry["type"].lower()
-    try:
-        factory = factories_type_from_coords[geom_type]
-    except KeyError:
-        raise ValueError("Unknown geometry type: {}".format(geometry["type"]))
-    if geom_type == "geometrycollection":
-        geometries = geometry["geometries"]
-        return factory(geometries)
-    else:
-        coordinates = geometry["coordinates"]
-        return factory(coordinates)
-
-
-def point_from_coordinates(coordinates):
-    length_coordinates = len(coordinates)
-    if length_coordinates < 2 or length_coordinates > 4:
-        raise DimensionError("Coordinates length must be 2, 3 or 4.")
-
-    if length_coordinates == 2:
-        point = lib.sfcgal_point_create_from_xy(*coordinates)
-    elif length_coordinates == 3:
-        point = lib.sfcgal_point_create_from_xyz(*coordinates)
-    elif length_coordinates == 4:
-        has_z = coordinates[2] is not None
-        has_m = coordinates[3] is not None
-        if not has_z and not has_m:
-            point = lib.sfcgal_point_create_from_xy(coordinates[0], coordinates[1])
-        elif has_z and not has_m:
-            point = lib.sfcgal_point_create_from_xyz(
-                coordinates[0], coordinates[1], coordinates[2])
-        elif not has_z and has_m:
-            point = lib.sfcgal_point_create_from_xym(
-                coordinates[0], coordinates[1], coordinates[3])
-        else:
-            point = lib.sfcgal_point_create_from_xyzm(*coordinates)
-
-    return point
-
-
-def linestring_from_coordinates(coordinates, close=False):
-    linestring = lib.sfcgal_linestring_create()
-    if coordinates:
-        for coordinate in coordinates:
-            point = point_from_coordinates(coordinate)
-            lib.sfcgal_linestring_add_point(linestring, point)
-        if close and coordinates[0] != coordinates[-1]:
-            point = point_from_coordinates(coordinates[0])
-            lib.sfcgal_linestring_add_point(linestring, point)
-    return linestring
-
-
-def triangle_from_coordinates(coordinates):
-    triangle = None
-    if coordinates and len(coordinates) == 3:
-        triangle = lib.sfcgal_triangle_create_from_points(
-            point_from_coordinates(coordinates[0]),
-            point_from_coordinates(coordinates[1]),
-            point_from_coordinates(coordinates[2])
-        )
-    else:
-        triangle = lib.sfcgal_triangle_create()
-
-    return triangle
-
-
-def polygon_from_coordinates(coordinates):
-    exterior = linestring_from_coordinates(coordinates[0], True)
-    polygon = lib.sfcgal_polygon_create_from_exterior_ring(exterior)
-    for n in range(1, len(coordinates)):
-        interior = linestring_from_coordinates(coordinates[n], True)
-        lib.sfcgal_polygon_add_interior_ring(polygon, interior)
-    return polygon
-
-
-def multipoint_from_coordinates(coordinates):
-    multipoint = lib.sfcgal_multi_point_create()
-    if coordinates:
-        for coords in coordinates:
-            point = point_from_coordinates(coords)
-            lib.sfcgal_geometry_collection_add_geometry(multipoint, point)
-    return multipoint
-
-
-def multilinestring_from_coordinates(coordinates):
-    multilinestring = lib.sfcgal_multi_linestring_create()
-    if coordinates:
-        for coords in coordinates:
-            linestring = linestring_from_coordinates(coords)
-            lib.sfcgal_geometry_collection_add_geometry(multilinestring, linestring)
-    return multilinestring
-
-
-def multipolygon_from_coordinates(coordinates):
-    multipolygon = lib.sfcgal_multi_polygon_create()
-    if coordinates:
-        for coords in coordinates:
-            polygon = polygon_from_coordinates(coords)
-            lib.sfcgal_geometry_collection_add_geometry(multipolygon, polygon)
-    return multipolygon
-
-
-def tin_from_coordinates(coordinates):
-    tin = lib.sfcgal_triangulated_surface_create()
-    if coordinates:
-        for coords in coordinates:
-            triangle = triangle_from_coordinates(coords)
-            lib.sfcgal_triangulated_surface_add_triangle(tin, triangle)
-    return tin
-
-
-def geometry_collection_from_coordinates(geometries):
-    collection = lib.sfcgal_geometry_collection_create()
-    for geometry in geometries:
-        geom = _shape(geometry)
-        lib.sfcgal_geometry_collection_add_geometry(collection, geom)
-    return collection
-
-
-def polyhedralsurface_from_coordinates(coordinates):
-    polyhedralsurface = lib.sfcgal_polyhedral_surface_create()
-    if coordinates:
-        for coords in coordinates:
-            polygon = polygon_from_coordinates(coords)
-            lib.sfcgal_polyhedral_surface_add_polygon(polyhedralsurface, polygon)
-    return polyhedralsurface
-
-
-def solid_from_coordinates(coordinates):
-    solid = lib.sfcgal_solid_create()
-    if coordinates:
-        polyhedralsurface = polyhedralsurface_from_coordinates(coordinates[0])
-        solid = lib.sfcgal_solid_create_from_exterior_shell(polyhedralsurface)
-        for coords in coordinates[1:]:
-            polyhedralsurface = polyhedralsurface_from_coordinates(coords)
-            lib.sfcgal_solid_add_interior_shell(solid, polyhedralsurface)
-    return solid
-
-
-factories_type_from_coords = {
-    "point": point_from_coordinates,
-    "linestring": linestring_from_coordinates,
-    "polygon": polygon_from_coordinates,
-    "multipoint": multipoint_from_coordinates,
-    "multilinestring": multilinestring_from_coordinates,
-    "multipolygon": multipolygon_from_coordinates,
-    "geometrycollection": geometry_collection_from_coordinates,
-    "TIN": multipolygon_from_coordinates,
-    "PolyhedralSurface": polyhedralsurface_from_coordinates,
-    "Triangle": triangle_from_coordinates,
-    "SOLID": solid_from_coordinates,
 }
 
 geom_types = {

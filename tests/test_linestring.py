@@ -33,6 +33,14 @@ def test_linestring_to_coordinates(long_line, c0, c1, c2, c3):
     assert coords[0:2] == [c0, c1]
     cloned_linestring = LineString(coords)
     assert cloned_linestring == long_line
+    other_linestring = LineString.from_coordinates(coords)
+    assert other_linestring == long_line
+
+
+def test_linestring_to_dict(long_line):
+    linestring_data = long_line.to_dict()
+    other_line = LineString.from_dict(linestring_data)
+    assert other_line == long_line
 
 
 def test_linestring_eq(line, line2):

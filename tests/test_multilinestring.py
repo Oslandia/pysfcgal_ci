@@ -46,3 +46,13 @@ def test_multilinestring_to_coordinates(multilinestring, c0, c1, c2, c3):
     assert multilinestring.to_coordinates() == [[c0, c1], [c0, c2], [c0, c3]]
     cloned_multilinestring = MultiLineString(multilinestring.to_coordinates())
     assert cloned_multilinestring == multilinestring
+    other_multilinestring = MultiLineString.from_coordinates(
+        multilinestring.to_coordinates()
+    )
+    assert other_multilinestring == multilinestring
+
+
+def test_multilinestring_to_dict(multilinestring):
+    multilinestring_data = multilinestring.to_dict()
+    other_multilinestring = MultiLineString.from_dict(multilinestring_data)
+    assert other_multilinestring == multilinestring

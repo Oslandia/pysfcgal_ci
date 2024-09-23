@@ -108,3 +108,11 @@ def test_solid_to_polyhedralsurface(solid, composed_polyhedralsurface):
 
 def test_solid_to_coordinates(solid, points_ext, points_int_1, points_int_2):
     assert solid.to_coordinates() == [points_ext, points_int_1, points_int_2]
+    other_solid = Solid.from_coordinates(solid.to_coordinates())
+    assert other_solid == solid
+
+
+def test_solid_to_dict(solid):
+    solid_data = solid.to_dict()
+    other_solid = Solid.from_dict(solid_data)
+    assert other_solid == solid

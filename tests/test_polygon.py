@@ -94,6 +94,14 @@ def test_polygon_to_coordinates(polygon1, ext_ring1):
     assert polygon1.to_coordinates() == [ext_ring1]
     cloned_polygon = Polygon(*polygon1.to_coordinates())
     assert cloned_polygon == polygon1
+    other_polygon = Polygon.from_coordinates(polygon1.to_coordinates())
+    assert other_polygon == polygon1
+
+
+def test_polygon_to_dict(polygon1):
+    polygon_data = polygon1.to_dict()
+    other_polygon = Polygon.from_dict(polygon_data)
+    assert other_polygon == polygon1
 
 
 def test_point_in_polygon(point_in_poly, polygon1, polygon2):

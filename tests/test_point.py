@@ -38,7 +38,7 @@ def point_3dm(coords):
         ("point_3d", (4, 5, 6)),
         ("point_2d", (4, 5)),
         ("point_4d", (4, 5, 6, 7)),
-        ("point_3dm", (4, 5, 7)),
+        ("point_3dm", (4, 5, None, 7)),
     ]
 )
 def test_point_to_coordinates(point_fixture, coordinates, request):
@@ -48,17 +48,22 @@ def test_point_to_coordinates(point_fixture, coordinates, request):
     if point_fixture in ("point_3d", "point_4d"):
         assert point.has_z
         assert point.z == coordinates[2]
-    elif point_fixture == "point_3dm":
-        assert point.has_m
-        assert point.m == coordinates[2]
-    if point_fixture == "point_4d":
+    if point_fixture in ("point_3dm", "point_4d"):
         assert point.has_m
         assert point.m == coordinates[3]
     assert point.to_coordinates() == coordinates
+    other_point = Point.from_coordinates(point.to_coordinates())
+    assert point == other_point
+    other_point = Point(*point.to_coordinates())
+    assert other_point == point
+
+
+def test_point_to_dict(point_3d):
+    point_data = point_3d.to_dict()
+    other_point = Point.from_dict(point_data)
+    assert other_point == point_3d
 
 
 def test_point_equivalence(point_2d, point_3d, point_3dm):
     assert not point_2d == point_3d
     assert not point_3dm == point_3d
-    other_point = Point(*point_3d.to_coordinates())
-    assert other_point == point_3d
