@@ -10,6 +10,10 @@ This modules is in the *very* early stages of development!
 
 See [build page](build.md)
 
+## Documentation
+
+Documentation is automatically generated and deployed from the CI: https://sfcgal.gitlab.io/pysfcgal
+
 ## Credits
 
 Initial work from https://github.com/snorfalorpagus/pysfcgal/
