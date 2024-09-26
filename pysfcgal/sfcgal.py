@@ -8,7 +8,7 @@ from __future__ import annotations
 import functools
 import platform
 from enum import Enum
-from typing import Optional, Union, cast
+from typing import Optional, Tuple, Union, cast
 
 from ._sfcgal import ffi, lib
 
@@ -471,7 +471,7 @@ class Geometry:
         """
         return lib.sfcgal_geometry_is_valid(self._geom) != 0
 
-    def is_valid_detail(self) -> str:
+    def is_valid_detail(self) -> Tuple[str, None]:
         """
         Provide detailed information about the validity of the geometry.
 
