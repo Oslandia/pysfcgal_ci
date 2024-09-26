@@ -1692,7 +1692,7 @@ class Point(Geometry):
         return cls(*coordinates)
 
     @staticmethod
-    def sfcgal_geom_from_coordinates(coordinates: list):
+    def sfcgal_geom_from_coordinates(coordinates: list) -> ffi.CData:
         """Instantiates a SFCGAL Point starting from a list of coordinates.
 
         Parameters
@@ -1913,7 +1913,8 @@ class LineString(Geometry):
         return [point.to_coordinates() for point in self]
 
     @staticmethod
-    def sfcgal_geom_from_coordinates(coordinates: list, close=False):
+    def sfcgal_geom_from_coordinates(
+            coordinates: list, close: bool = False) -> ffi.CData:
         """Instantiates a SFCGAL LineString starting from a list of coordinates.
 
         Parameters
@@ -2166,7 +2167,7 @@ class Polygon(Geometry):
         return cls(coordinates[0], coordinates[1:] if len(coordinates) > 0 else None)
 
     @staticmethod
-    def sfcgal_geom_from_coordinates(coordinates: list):
+    def sfcgal_geom_from_coordinates(coordinates: list) -> ffi.CData:
         """Instantiates a SFCGAL Polygon starting from a list of coordinates.
 
         Parameters
@@ -2364,7 +2365,7 @@ class MultiPoint(GeometryCollectionBase):
         self._geom = MultiPoint.sfcgal_geom_from_coordinates(coords)
 
     @staticmethod
-    def sfcgal_geom_from_coordinates(coordinates: list):
+    def sfcgal_geom_from_coordinates(coordinates: list) -> ffi.CData:
         """Instantiates a SFCGAL MultiPoint starting from a list of coordinates.
 
         Parameters
@@ -2390,7 +2391,8 @@ class MultiLineString(GeometryCollectionBase):
         self._geom = MultiLineString.sfcgal_geom_from_coordinates(coords)
 
     @staticmethod
-    def sfcgal_geom_from_coordinates(coordinates: list, close=False):
+    def sfcgal_geom_from_coordinates(
+            coordinates: list, close: bool = False) -> ffi.CData:
         """Instantiates a SFCGAL MultiLineString starting from a list of coordinates.
 
         Parameters
@@ -2419,7 +2421,7 @@ class MultiPolygon(GeometryCollectionBase):
         self._geom = MultiPolygon.sfcgal_geom_from_coordinates(coords)
 
     @staticmethod
-    def sfcgal_geom_from_coordinates(coordinates: list):
+    def sfcgal_geom_from_coordinates(coordinates: list) -> ffi.CData:
         """Instantiates a SFCGAL MultiPolygon starting from a list of coordinates.
 
         Parameters
@@ -2581,7 +2583,7 @@ class Tin(GeometryCollectionBase):
         return Geometry.from_sfcgal_geometry(multipolygon) if wrapped else multipolygon
 
     @staticmethod
-    def sfcgal_geom_from_coordinates(coordinates: list):
+    def sfcgal_geom_from_coordinates(coordinates: list) -> ffi.CData:
         """Instantiates a SFCGAL Tin starting from a list of coordinates.
 
         Parameters
@@ -2749,7 +2751,7 @@ class Triangle(Geometry):
         return [vertex.to_coordinates() for vertex in self]
 
     @staticmethod
-    def sfcgal_geom_from_coordinates(coordinates: list):
+    def sfcgal_geom_from_coordinates(coordinates: list) -> ffi.CData:
         """Instantiates a SFCGAL Triangle starting from a list of coordinates.
 
         If the coordinates does not contain three items, an empty Triangle is returned
@@ -2903,7 +2905,7 @@ class PolyhedralSurface(GeometryCollectionBase):
         return cast(Solid, PolyhedralSurface.from_sfcgal_geometry(geom))
 
     @staticmethod
-    def sfcgal_geom_from_coordinates(coordinates: list):
+    def sfcgal_geom_from_coordinates(coordinates: list) -> ffi.CData:
         """Instantiates a SFCGAL PolyhedralSurface starting from a list of coordinates.
 
         Parameters
@@ -3077,7 +3079,8 @@ class Solid(GeometryCollectionBase):
         return Geometry.from_sfcgal_geometry(phs_geom) if wrapped else phs_geom
 
     @staticmethod
-    def sfcgal_geom_from_coordinates(coordinates: list, close=False):
+    def sfcgal_geom_from_coordinates(
+            coordinates: list, close: bool = False) -> ffi.CData:
         """Instantiates a SFCGAL Solid starting from a list of coordinates.
 
         Parameters
