@@ -3192,11 +3192,12 @@ class GeometryCollection(GeometryCollectionBase):
         for geojson_geometry in geojson_data["geometries"]:
             geom_type = geojson_geometry["type"]
             geometry_cls = geom_type_to_cls[geom_types[geom_type]]
-            geometry = geometry_cls.sfcgal_geom_from_coordinates(
+            geometry = geometry_cls.sfcgal_geom_from_coordinates(  # type: ignore
                 geojson_geometry["coordinates"]
             )
             lib.sfcgal_geometry_collection_add_geometry(collection, geometry)
-        return GeometryCollection.from_sfcgal_geometry(collection)
+        return cast(
+            GeometryCollection, GeometryCollection.from_sfcgal_geometry(collection))
 
 
 class GeometrySequence:
