@@ -176,6 +176,7 @@ deploy:pages:
   only:
     refs:
       - master
+      - merge_requests
   needs:
     - job: build:documentation
       artifacts: true
@@ -187,3 +188,4 @@ deploy:pages:
   artifacts:
     paths:
       - public
+    when: always
