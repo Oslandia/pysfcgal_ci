@@ -228,11 +228,6 @@ class Geometry:
         return Geometry.from_sfcgal_geometry(geom)
 
     @cond_icontract('require', lambda self: self.is_valid())
-    def make_solid(self) -> Geometry:
-        geom = lib.sfcgal_geometry_make_solid(self._geom)
-        return Geometry.from_sfcgal_geometry(geom)
-
-    @cond_icontract('require', lambda self: self.is_valid())
     def force_rhr(self) -> Geometry:
         geom = lib.sfcgal_geometry_force_rhr(self._geom)
         return Geometry.from_sfcgal_geometry(geom)
@@ -1021,6 +1016,18 @@ class PolyhedralSurface(GeometryCollectionBase):
 
     def __eq__(self, other):
         return self[:] == other[:]
+
+    @cond_icontract('require', lambda self: self.is_valid())
+    def to_solid(self) -> Solid:
+        """Convert the polyhedralsurface into a solid.
+
+        Returns
+        -------
+        Solid
+            A solid version of the polyhedralsurface.
+        """
+        geom = lib.sfcgal_geometry_make_solid(self._geom)
+        return PolyhedralSurface.from_sfcgal_geometry(geom)
 
 
 class Solid(GeometryCollectionBase):

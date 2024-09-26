@@ -1,6 +1,6 @@
 import pytest
 
-from pysfcgal.sfcgal import Polygon, PolyhedralSurface
+from pysfcgal.sfcgal import Polygon, PolyhedralSurface, read_wkt
 
 
 @pytest.fixture
@@ -62,3 +62,21 @@ def test_polyhedralsurface_to_coordinates(polyhedralsurface, c0, c1, c2, c3):
     assert polyhedralsurface.to_coordinates() == [
         [[c0, c1, c2, c0]], [[c0, c1, c3, c0]], [[c0, c2, c3, c0]], [[c1, c2, c3, c1]]
     ]
+
+
+def test_to_solid():
+    coords_str = (
+        "((3.0 3.0 0.0,3.0 8.0 0.0,8.0 8.0 0.0,8.0 3.0 0.0"
+        ",3.0 3.0 0.0)),"
+        "((3.0 3.0 30.0,8.0 3.0 30.0,8.0 8.0 30.0,3.0 8.0 30.0,3.0 3.0 30.0)),"
+        "((3.0 3.0 0.0,3.0 3.0 30.0,3.0 8.0 30.0,3.0 8.0 0.0,3.0 3.0 0.0)),"
+        "((3.0 8.0 0.0,3.0 8.0 30.0,8.0 8.0 30.0,8.0 8.0 0.0,3.0 8.0 0.0)),"
+        "((8.0 8.0 0.0,8.0 8.0 30.0,8.0 3.0 30.0,8.0 3.0 0.0,8.0 8.0 0.0)),"
+        "((8.0 3.0 0.0,8.0 3.0 30.0,3.0 3.0 30.0,3.0 3.0 0.0,8.0 3.0 0.0))"
+    )
+
+    wkt_poly = f"POLYHEDRALSURFACE Z ({coords_str})"
+    poly = read_wkt(wkt_poly)
+    solid = poly.to_solid()
+    expected_wkt = f"SOLID Z (({coords_str}))"
+    assert solid.wktDecim(1) == expected_wkt
