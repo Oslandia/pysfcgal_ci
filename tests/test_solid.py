@@ -100,7 +100,9 @@ def test_solid(
 
 
 def test_solid_to_polyhedralsurface(solid, composed_polyhedralsurface):
+    assert solid.n_shells > 0
     phs = solid.to_polyhedralsurface(wrapped=True)
+    assert solid.n_shells == len(phs)
     assert not phs.is_valid()  # PolyhedralSurface with interior shells
     assert phs.geom_type == "PolyhedralSurface"
     assert phs == composed_polyhedralsurface

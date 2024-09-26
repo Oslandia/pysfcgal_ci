@@ -1443,7 +1443,7 @@ class Solid(GeometryCollectionBase):
         for shell in self.shells:
             num_geoms = lib.sfcgal_polyhedral_surface_num_polygons(shell._geom)
             for geom_idx in range(num_geoms):
-                polygon = lib.sfcgal_polyhedral_surface_polygon_n(shell._geom, geom_idx)
+                polygon = lib.sfcgal_solid_shell_n(shell._geom, geom_idx)
                 lib.sfcgal_polyhedral_surface_add_polygon(
                     phs_geom, lib.sfcgal_geometry_clone(polygon)
                 )
