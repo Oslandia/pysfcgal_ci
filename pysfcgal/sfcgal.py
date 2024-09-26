@@ -139,7 +139,7 @@ class Geometry:
         return lib.sfcgal_geometry_area(self._geom)
 
     @property
-    def is_empty(self):
+    def is_empty(self) -> bool:
         """
         Check if the geometry is empty.
 
