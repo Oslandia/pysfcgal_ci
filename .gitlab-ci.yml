@@ -196,7 +196,7 @@ deploy:pages:
       fi
       echo "Deploy on: $DEPLOY_PATH"
     - mkdir -p public/$DEPLOY_PATH
-    - cp -rf docs/site/* public/$DEPLOY_PATH/
+    - cp -rf docs/site/* public/preview/
   artifacts:
     paths:
       - public
