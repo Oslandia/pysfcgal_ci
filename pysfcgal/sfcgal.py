@@ -2562,7 +2562,7 @@ class Tin(GeometryCollectionBase):
             return False
         return self[:] == other[:]
 
-    def to_multipolygon(self, wrapped=False) -> MultiPolygon:
+    def to_multipolygon(self, wrapped: bool = False) -> MultiPolygon:
         """Convert the TIN to a MultiPolygon.
 
         Parameters
@@ -2582,9 +2582,9 @@ class Tin(GeometryCollectionBase):
                 self._geom, geom_idx
             )
             triangle_clone = lib.sfcgal_geometry_clone(triangle_geom)
-            polygon = Geometry.from_sfcgal_geometry(triangle_clone).to_polygon(
-                wrapped=False
-            )
+            triangle_clone_wrap = cast(
+                Triangle, Geometry.from_sfcgal_geometry(triangle_clone))
+            polygon = triangle_clone_wrap.to_polygon(wrapped=False)
             lib.sfcgal_geometry_collection_add_geometry(multipolygon, polygon)
         return Geometry.from_sfcgal_geometry(multipolygon) if wrapped else multipolygon
 
