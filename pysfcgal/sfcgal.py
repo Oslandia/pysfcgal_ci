@@ -3060,7 +3060,8 @@ class Solid(GeometryCollectionBase):
         """
         return self.shells[n]
 
-    def to_polyhedralsurface(self, wrapped: bool = True):
+    def to_polyhedralsurface(
+            self, wrapped: bool = True) -> Union[PolyhedralSurface, ffi.CData]:
         """Convert the solid to a PolyhedralSurface.
 
         Parameters
