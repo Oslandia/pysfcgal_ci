@@ -8,7 +8,7 @@ nav:
         - API: api_reference/api.md
   
 theme: 
-  name: readthedocs
+  name: material
   logo: assets/img/sfcgal.png
   favicon: assets/img/sfcgal.png
   
