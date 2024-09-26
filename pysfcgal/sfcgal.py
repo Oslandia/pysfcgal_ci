@@ -1556,10 +1556,12 @@ class Point(Geometry):
     def __init__(self, x, y, z=None, m=None):
         self._geom = self.sfcgal_geom_from_coordinates([x, y, z, m])
 
-    def __eq__(self, other: Point) -> bool:
+    def __eq__(self, other: object) -> bool:
         """Two points are equals if their dimension and coordinates are equals
         (x, y, z and m).
         """
+        if not isinstance(other, Point):
+            return False
         are_point_equal = self.x == other.x and self.y == other.y
         if self.has_z and other.has_z:
             are_point_equal &= self.z == other.z
@@ -1741,9 +1743,11 @@ class LineString(Geometry):
         """
         self._geom = self.sfcgal_geom_from_coordinates(coords)
 
-    def __eq__(self, other: LineString) -> bool:
+    def __eq__(self, other: object) -> bool:
         """Two LineStrings are equals if they contain the same points in the same
         order."""
+        if not isinstance(other, LineString):
+            return False
         if len(self) != len(other):
             return False
         for p, other_p in zip(self, other):
@@ -2016,7 +2020,7 @@ class Polygon(Geometry):
                 )
             )
 
-    def __eq__(self, other: Polygon) -> bool:
+    def __eq__(self, other: object) -> bool:
         """Two Polygons are equal if their rings (exterior and interior) are equal.
 
         Parameters
@@ -2029,6 +2033,8 @@ class Polygon(Geometry):
         bool
             True if the Polygons are equal, False otherwise.
         """
+        if not isinstance(other, Polygon):
+            return False
         if self.exterior != other.exterior:
             return False
         if self.n_interiors != other.n_interiors:
@@ -2323,7 +2329,7 @@ class GeometryCollectionBase(Geometry):
         """
         return self.geoms[index]
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         """Check if two geometry collections are equal based on their geometries.
 
         Parameters
@@ -2336,6 +2342,8 @@ class GeometryCollectionBase(Geometry):
         bool
             True if both collections contain the same geometries, False otherwise.
         """
+        if not isinstance(other, GeometryCollectionBase):
+            return False
         return self.geoms == other.geoms
 
     def to_coordinates(self):
@@ -2529,7 +2537,7 @@ class Tin(GeometryCollectionBase):
                 )
             )
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         """Check if two TINs are equal based on their triangles.
 
         Parameters
@@ -2542,6 +2550,8 @@ class Tin(GeometryCollectionBase):
         bool
             True if both TINs contain the same triangles, False otherwise.
         """
+        if not isinstance(other, Tin):
+            return False
         return self[:] == other[:]
 
     def to_multipolygon(self, wrapped=False) -> MultiPolygon:
@@ -2689,7 +2699,7 @@ class Triangle(Geometry):
                 )
             )
 
-    def __eq__(self, other: Triangle) -> bool:
+    def __eq__(self, other: object) -> bool:
         """Check if two triangles are equal based on their vertices.
 
         Parameters
@@ -2863,7 +2873,7 @@ class PolyhedralSurface(GeometryCollectionBase):
                 )
             )
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         """Check if two polyhedral surfaces are equal based on their polygons.
 
         Parameters
@@ -2876,6 +2886,8 @@ class PolyhedralSurface(GeometryCollectionBase):
         bool
             True if both polyhedral surfaces contain the same polygons, False otherwise.
         """
+        if not isinstance(other, PolyhedralSurface):
+            return False
         return self[:] == other[:]
 
     @cond_icontract(lambda self: self.is_valid(), "require")
@@ -2975,7 +2987,7 @@ class Solid(GeometryCollectionBase):
                 )
             )
 
-    def __eq__(self, other: Solid) -> bool:
+    def __eq__(self, other: object) -> bool:
         """Two Solids are equal if their shells (exterior and interior) are equal.
 
         Parameters
@@ -2988,6 +3000,8 @@ class Solid(GeometryCollectionBase):
         bool
             True if both solids contain the same shells, False otherwise.
         """
+        if not isinstance(other, Solid):
+            return False
         if self.n_shells != other.n_shells:
             return False
         return all(phs == other_phs for phs, other_phs in zip(self, other))
@@ -3098,7 +3112,9 @@ class GeometryCollection(GeometryCollectionBase):
         clone = lib.sfcgal_geometry_clone(geometry._geom)
         lib.sfcgal_geometry_collection_add_geometry(self._geom, clone)
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, GeometryCollection):
+            return False
         return all(
             isinstance(other_geom, type(geom)) and geom == other_geom
             for geom, other_geom in zip(self, other)
@@ -3267,7 +3283,7 @@ class GeometrySequence:
                 )
             )
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         """Check equality between this geometry sequence and another.
 
         Parameters
@@ -3280,6 +3296,8 @@ class GeometrySequence:
         bool
             True if both geometry sequences are equal, False otherwise.
         """
+        if not isinstance(other, GeometrySequence):
+            return False
         return self[:] == other[:]
 
 
