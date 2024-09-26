@@ -2,16 +2,16 @@ site_name: PySFCGAL - Documentation
 
 nav:
   - Home: index.md
-  - User guide: 
+  - User guide:
         - Installation: user_guide/build.md
   - API Reference:
         - API: api_reference/api.md
-  
-theme: 
+
+theme:
   name: material
   logo: assets/img/sfcgal.png
   favicon: assets/img/sfcgal.png
-  
+
 
 markdown_extensions:
   - attr_list
@@ -19,4 +19,9 @@ markdown_extensions:
 
 plugins:
 - search
-- mkdocstrings
+- mkdocstrings:
+    default_handler: python  # optional
+    handlers:
+      python:
+        options:
+          docstring_style: numpy
