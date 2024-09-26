@@ -174,9 +174,10 @@ build:documentation:
 deploy:pages:
   stage: 🚀 deploy
   only:
-    - merge_requests
-    - master
-    - tags
+    refs:
+      - merge_requests
+      - master
+      - tags
   needs:
     - job: build:documentation
       artifacts: true
