@@ -512,7 +512,7 @@ class Geometry:
         return lib.sfcgal_geometry_orientation(self._geom)
 
     @cond_icontract(lambda self, r: self.is_valid(), "require")
-    def round(self, r) -> float:
+    def round(self, r: int) -> Geometry:
         """
         Round the geometry to a specified precision.
 
