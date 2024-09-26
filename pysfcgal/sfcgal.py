@@ -7,8 +7,12 @@ from __future__ import annotations
 
 import functools
 import platform
+import typing
 from enum import Enum
 from typing import Optional, Tuple, Union, cast
+
+if typing.TYPE_CHECKING:
+    from typing_extensions import TypeAlias
 
 from ._sfcgal import ffi, lib
 
@@ -1553,7 +1557,9 @@ class Point(Geometry):
         are done at the SFCGAL lower level.
     """
 
-    def __init__(self, x, y, z=None, m=None):
+    Coord: TypeAlias = Optional[Union[int, float]]
+
+    def __init__(self, x: Coord, y: Coord, z: Coord = None, m: Coord = None):
         self._geom = self.sfcgal_geom_from_coordinates([x, y, z, m])
 
     def __eq__(self, other: object) -> bool:
@@ -1574,7 +1580,7 @@ class Point(Geometry):
         return are_point_equal
 
     @property
-    def x(self):
+    def x(self) -> Coord:
         """Get the x-coordinate of the point.
 
         Returns
@@ -1585,7 +1591,7 @@ class Point(Geometry):
         return lib.sfcgal_point_x(self._geom)
 
     @property
-    def y(self):
+    def y(self) -> Coord:
         """Get the y-coordinate of the point.
 
         Returns
@@ -1596,7 +1602,7 @@ class Point(Geometry):
         return lib.sfcgal_point_y(self._geom)
 
     @property
-    def z(self):
+    def z(self) -> Coord:
         """Get the z-coordinate of the point.
 
         Raises
@@ -1615,7 +1621,7 @@ class Point(Geometry):
             raise DimensionError("This point has no z coordinate.")
 
     @property
-    def m(self):
+    def m(self) -> Coord:
         """Get the m-coordinate of the point.
 
         Raises
@@ -1659,7 +1665,7 @@ class Point(Geometry):
         geom = lib.sfcgal_geometry_buffer3d(self._geom, radius, segments, 0)
         return Geometry.from_sfcgal_geometry(geom)
 
-    def to_coordinates(self) -> tuple:
+    def to_coordinates(self) -> Tuple[Coord, ...]:
         """Generates the coordinates of the Point.
 
         Returns
@@ -1667,11 +1673,11 @@ class Point(Geometry):
         tuple
             Two, three or four floating points depending on the point nature.
         """
-        coords = (self.x, self.y)
+        coords: Tuple[Point.Coord, ...] = (self.x, self.y)
         if self.has_m:
             coords += (self.z if self.has_z else None, self.m)
         elif self.has_z:
-            coords += (self.z,)
+            coords = (*coords, self.z)
         return coords
 
     @classmethod
