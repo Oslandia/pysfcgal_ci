@@ -81,7 +81,7 @@ class Geometry:
         geometry are done at the SFCGAL lower level.
 
     """
-
+    _geom: ffi.CData
     _owned = True
 
     @cond_icontract(lambda self, other: self.is_valid() and other.is_valid(), "require")
