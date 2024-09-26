@@ -14,6 +14,7 @@ compiler = platform.python_compiler()
 
 try:
     import icontract
+
     has_icontract = True
 except ImportError:
     has_icontract = False
@@ -25,6 +26,7 @@ def cond_icontract(contract_name, *args, **kwargs):
             decorator = getattr(icontract, contract_name)
             func = decorator(*args, **kwargs)(func)
         return func
+
     return cond_decorateur
 
 
@@ -33,9 +35,9 @@ lib.sfcgal_init()
 
 
 class DimensionError(Exception):
-    """Indicates a dimension error, e.g. requesting for the Z coordinates in a 2D-point.
+    """Indicates a dimension error, e.g. requesting for the Z coordinates in
+    a 2D-point."""
 
-    """
     pass
 
 
@@ -52,19 +54,88 @@ def sfcgal_full_version():
 
 
 def read_wkt(wkt):
+    """Parse a Well-Known Text (WKT) representation into a Geometry object.
+
+    This function takes a WKT string and converts it into a `Geometry` object
+    by utilizing the SFCGAL library's WKT parsing capabilities.
+
+    Parameters
+    ----------
+    wkt : str
+        The Well-Known Text (WKT) string representing the geometry.
+
+    Returns
+    -------
+    Geometry
+        A `Geometry` object parsed from the WKT string.
+    """
     return Geometry.from_sfcgal_geometry(_read_wkt(wkt))
 
 
 def _read_wkt(wkt):
+    """
+    Internal function to read Well-Known Text (WKT) and return the
+    SFCGAL geometry object.
+
+    This function converts the WKT string into a UTF-8 encoded byte string,
+    and uses the SFCGAL library to create a geometry object from the WKT.
+
+    Parameters
+    ----------
+    wkt : str
+        The Well-Known Text (WKT) string representing the geometry.
+
+    Returns
+    -------
+    _cffi_backend._CDatabase
+        A pointer towards a SFCGAL Point
+    """
     wkt = bytes(wkt, encoding="utf-8")
     return lib.sfcgal_io_read_wkt(wkt, len(wkt))
 
 
 def read_wkb(wkb):
+    """
+    Parse a Well-Known Binary (WKB) representation into a Geometry object.
+
+    This function takes a WKB byte string and converts it into a `Geometry` object
+    by utilizing the SFCGAL library's WKB parsing capabilities.
+
+    Parameters
+    ----------
+    wkb : bytes
+        The Well-Known Binary (WKB) byte string representing the geometry.
+
+    Returns
+    -------
+    Geometry
+        A `Geometry` object parsed from the WKB byte string.
+    """
     return Geometry.from_sfcgal_geometry(_read_wkb(wkb))
 
 
 def _read_wkb(wkb):
+    """Internal function to read a Well-Known Binary (WKB) representation
+    and return the SFCGAL geometry object.
+
+    This function accepts a WKB representation in either binary format
+    (bytes or bytearray) or hexadecimal string format,
+    converts it into a UTF-8 encoded byte string, and uses the SFCGAL
+    library to generate the corresponding geometry object.
+
+    Parameters
+    ----------
+    wkb : bytes, bytearray, or str
+        The Well-Known Binary (WKB) data representing the geometry.
+        - If a `bytes` or `bytearray` object is provided, it is automatically
+        converted to a hexadecimal string.
+        - If a `str` is provided, it must already be a hexadecimal string.
+
+    Returns
+    -------
+    _cffi_backend._CDatabase
+        A pointer towards a SFCGAL Geometry
+    """
     if isinstance(wkb, (bytes, bytearray)):
         wkb = wkb.hex()
     elif not isinstance(wkb, str):
@@ -74,6 +145,29 @@ def _read_wkb(wkb):
 
 
 def write_wkt(geom, decim=-1):
+    """Convert a geometry object into its Well-Known Text (WKT) representation.
+
+    This function takes a geometry object and returns its WKT representation as a
+    string.
+    If the `decim` parameter is provided and is non-negative, the WKT will include
+    a specific number of decimal places.
+
+    Parameters
+    ----------
+    geom : Geometry or SFCGAL.Geometry
+        The geometry object to be converted. If the input is a `Geometry` instance,
+        its internal SFCGAL geometry object is extracted for the WKT conversion.
+
+    decim : int, optional
+        The number of decimal places to include in the WKT output.
+        If `decim` is negative (default), the WKT is returned without a specific
+        decimal precision.
+
+    Returns
+    -------
+    str
+        The Well-Known Text (WKT) representation of the geometry.
+    """
     if isinstance(geom, Geometry):
         geom = geom._geom
     try:
@@ -92,6 +186,25 @@ def write_wkt(geom, decim=-1):
 
 
 def write_wkb(geom, asHex=False):
+    """Convert a geometry object into its Well-Known Binary (WKB) or Hexadecimal WKB
+    representation.
+
+    This function takes a geometry object and returns its WKB representation as a binary
+    string, or as a hexadecimal string if `asHex` is set to True. It handles memory
+    allocation for the generated WKB and ensures that memory is properly freed after
+    use.
+
+    Parameters
+    ----------
+    geom : Geometry or SFCGAL.Geometry
+        The geometry object to be converted. If the input is a `Geometry` instance,
+        its internal
+        SFCGAL geometry object is extracted for the WKB conversion.
+
+    asHex : bool, optional
+        If True, the function returns the geometry's WKB as a hexadecimal string.
+        If False (default), the WKB is returned as a binary string.
+    """
     if isinstance(geom, Geometry):
         geom = geom._geom
     try:
@@ -126,139 +239,420 @@ class Geometry:
         geometry are done at the SFCGAL lower level.
 
     """
+
     _owned = True
 
-    @cond_icontract('require', lambda self, other: self.is_valid())
-    @cond_icontract('require', lambda self, other: other.is_valid())
+    @cond_icontract("require", lambda self, other: self.is_valid())
+    @cond_icontract("require", lambda self, other: other.is_valid())
     def distance(self, other: Geometry) -> float:
+        """
+        Compute the 2D Euclidean distance between this geometry and another geometry.
+
+        Parameters
+        ----------
+        other : Geometry
+            The other geometry object to compute the distance to.
+
+        Returns
+        -------
+        float
+            The 2D Euclidean distance between the two geometries.
+        """
         return lib.sfcgal_geometry_distance(self._geom, other._geom)
 
-    @cond_icontract('require', lambda self, other: self.is_valid())
-    @cond_icontract('require', lambda self, other: other.is_valid())
+    @cond_icontract("require", lambda self, other: self.is_valid())
+    @cond_icontract("require", lambda self, other: other.is_valid())
     def distance_3d(self, other: Geometry) -> float:
+        """
+        Compute the 3D Euclidean distance between this geometry and another geometry.
+
+        Parameters
+        ----------
+        other : Geometry
+            The other geometry object to compute the 3D distance to.
+
+        Returns
+        -------
+        float
+            The 3D Euclidean distance between the two geometries.
+        """
         return lib.sfcgal_geometry_distance_3d(self._geom, other._geom)
 
     @property
-    @cond_icontract('require', lambda self: self.is_valid())
+    @cond_icontract("require", lambda self: self.is_valid())
     def area(self) -> float:
+        """
+        Return the area of the geometry.
+
+        This property returns the area of the geometry, applicable
+        for surfaces like polygons.
+
+        Returns
+        -------
+        float
+            The area of the geometry.
+        """
         return lib.sfcgal_geometry_area(self._geom)
 
     @property
     def is_empty(self):
+        """
+        Check if the geometry is empty.
+
+        Returns
+        -------
+        bool
+            True if the geometry is empty, False otherwise.
+        """
         return lib.sfcgal_geometry_is_empty(self._geom)
 
     @property
     def has_z(self) -> bool:
+        """
+        Check if the geometry has a Z component (3D geometry).
+
+        Returns
+        -------
+        bool
+            True if the geometry has a Z component, False otherwise.
+        """
         return lib.sfcgal_geometry_is_3d(self._geom) == 1
 
     @property
     def has_m(self) -> bool:
+        """
+        Check if the geometry is measured (has an 'M' value).
+
+        Returns
+        -------
+        bool
+            True if the geometry is measured, False otherwise.
+        """
         return lib.sfcgal_geometry_is_measured(self._geom) == 1
 
     @property
     def geom_type(self) -> str:
+        """
+        Return the type of the geometry as a string.
+
+        Returns
+        -------
+        str
+            The geometry type as a string (e.g., 'Point', 'Polygon').
+        """
         return geom_types_r[lib.sfcgal_geometry_type_id(self._geom)]
 
-    @cond_icontract('require', lambda self: self.is_valid())
+    @cond_icontract("require", lambda self: self.is_valid())
     def area_3d(self) -> float:
+        """
+        Return the 3D area of the geometry.
+
+        Returns
+        -------
+        float
+            The 3D area of the geometry.
+        """
         return lib.sfcgal_geometry_area_3d(self._geom)
 
-    @cond_icontract('require', lambda self: self.is_valid())
+    @cond_icontract("require", lambda self: self.is_valid())
     def volume(self) -> float:
+        """
+        Return the volume of the geometry.
+
+        Returns
+        -------
+        float
+            The volume of the geometry.
+        """
         return lib.sfcgal_geometry_volume(self._geom)
 
-    @cond_icontract('require', lambda self: self.is_valid())
+    @cond_icontract("require", lambda self: self.is_valid())
     def convexhull(self) -> Geometry:
+        """
+        Compute the 2D convex hull of the geometry.
+
+        Returns
+        -------
+        Geometry
+            The convex hull of the geometry.
+        """
         geom = lib.sfcgal_geometry_convexhull(self._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract('require', lambda self: self.is_valid())
+    @cond_icontract("require", lambda self: self.is_valid())
     def convexhull_3d(self) -> Geometry:
+        """
+        Compute the 3D convex hull of the geometry.
+
+        Returns
+        -------
+        Geometry
+            The 3D convex hull of the geometry.
+        """
         geom = lib.sfcgal_geometry_convexhull_3d(self._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract('require', lambda self, other: self.is_valid())
-    @cond_icontract('require', lambda self, other: other.is_valid())
+    @cond_icontract("require", lambda self, other: self.is_valid())
+    @cond_icontract("require", lambda self, other: other.is_valid())
     def difference(self, other: Geometry) -> Geometry:
+        """
+        Compute the difference between this geometry and another in 2D.
+
+        Parameters
+        ----------
+        other : Geometry
+            The other geometry to compute the difference with.
+
+        Returns
+        -------
+        Geometry
+            The resulting geometry after computing the difference.
+        """
         geom = lib.sfcgal_geometry_difference(self._geom, other._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract('require', lambda self, other: self.is_valid())
-    @cond_icontract('require', lambda self, other: other.is_valid())
+    @cond_icontract("require", lambda self, other: self.is_valid())
+    @cond_icontract("require", lambda self, other: other.is_valid())
     def difference_3d(self, other: Geometry) -> Geometry:
+        """
+        Compute the difference between this geometry and another in 3D.
+
+        Parameters
+        ----------
+        other : Geometry
+            The other geometry to compute the 3D difference with.
+
+        Returns
+        -------
+        Geometry
+            The resulting 3D geometry after computing the difference.
+        """
         geom = lib.sfcgal_geometry_difference_3d(self._geom, other._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract('require', lambda self, other: self.is_valid())
-    @cond_icontract('require', lambda self, other: other.is_valid())
+    @cond_icontract("require", lambda self, other: self.is_valid())
+    @cond_icontract("require", lambda self, other: other.is_valid())
     def intersects(self, other: Geometry) -> bool:
+        """
+        Check if this geometry intersects with another geometry in 2D.
+
+        Parameters
+        ----------
+        other : Geometry
+            The other geometry to check intersection with.
+
+        Returns
+        -------
+        bool
+            True if the geometries intersect, False otherwise.
+        """
         return lib.sfcgal_geometry_intersects(self._geom, other._geom) == 1
 
-    @cond_icontract('require', lambda self, other: self.is_valid())
-    @cond_icontract('require', lambda self, other: other.is_valid())
+    @cond_icontract("require", lambda self, other: self.is_valid())
+    @cond_icontract("require", lambda self, other: other.is_valid())
     def intersects_3d(self, other: Geometry) -> bool:
+        """
+        Check if this geometry intersects with another geometry in 3D.
+
+        Parameters
+        ----------
+        other : Geometry
+            The other geometry to check intersection with.
+
+        Returns
+        -------
+        bool
+            True if the geometries intersect in 3D, False otherwise.
+        """
         return lib.sfcgal_geometry_intersects_3d(self._geom, other._geom) == 1
 
-    @cond_icontract('require', lambda self, other: self.is_valid())
-    @cond_icontract('require', lambda self, other: other.is_valid())
+    @cond_icontract("require", lambda self, other: self.is_valid())
+    @cond_icontract("require", lambda self, other: other.is_valid())
     def intersection(self, other: Geometry) -> Geometry:
+        """
+        Compute the intersection of this geometry and another in 2D.
+
+        Parameters
+        ----------
+        other : Geometry
+            The other geometry to compute the intersection with.
+
+        Returns
+        -------
+        Geometry
+            The resulting geometry after the intersection operation.
+        """
         geom = lib.sfcgal_geometry_intersection(self._geom, other._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract('require', lambda self, other: self.is_valid())
-    @cond_icontract('require', lambda self, other: other.is_valid())
+    @cond_icontract("require", lambda self, other: self.is_valid())
+    @cond_icontract("require", lambda self, other: other.is_valid())
     def intersection_3d(self, other: Geometry) -> Geometry:
+        """
+        Compute the intersection of this geometry and another in 3D.
+
+        Parameters
+        ----------
+        other : Geometry
+            The other geometry to compute the 3D intersection with.
+
+        Returns
+        -------
+        Geometry
+            The resulting geometry after the 3D intersection operation.
+        """
         geom = lib.sfcgal_geometry_intersection_3d(self._geom, other._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract('require', lambda self, other: self.is_valid())
-    @cond_icontract('require', lambda self, other: other.is_valid())
+    @cond_icontract("require", lambda self, other: self.is_valid())
+    @cond_icontract("require", lambda self, other: other.is_valid())
     def union(self, other: Geometry) -> Geometry:
+        """
+        Compute the union of this geometry and another in 2D.
+
+        Parameters
+        ----------
+        other : Geometry
+            The other geometry to compute the union with.
+
+        Returns
+        -------
+        Geometry
+            The resulting geometry after the union operation.
+        """
         geom = lib.sfcgal_geometry_union(self._geom, other._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract('require', lambda self, other: self.is_valid())
-    @cond_icontract('require', lambda self, other: other.is_valid())
+    @cond_icontract("require", lambda self, other: self.is_valid())
+    @cond_icontract("require", lambda self, other: other.is_valid())
     def union_3d(self, other: Geometry) -> Geometry:
+        """
+        Compute the union of this geometry and another in 3D.
+
+        Parameters
+        ----------
+        other : Geometry
+            The other geometry to compute the 3D union with.
+
+        Returns
+        -------
+        Geometry
+            The resulting 3D geometry after the union operation.
+        """
         geom = lib.sfcgal_geometry_union_3d(self._geom, other._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract('require', lambda self, other: self.is_valid())
-    @cond_icontract('require', lambda self, other: other.is_valid())
+    @cond_icontract("require", lambda self, other: self.is_valid())
+    @cond_icontract("require", lambda self, other: other.is_valid())
     def covers(self, other: Geometry) -> bool:
+        """
+        Check if this geometry covers another geometry in 2D.
+
+        Parameters
+        ----------
+        other : Geometry
+            The other geometry to check coverage with.
+
+        Returns
+        -------
+        bool
+            True if this geometry covers the other geometry, False otherwise.
+        """
         return lib.sfcgal_geometry_covers(self._geom, other._geom) == 1
 
-    @cond_icontract('require', lambda self, other: self.is_valid())
-    @cond_icontract('require', lambda self, other: other.is_valid())
+    @cond_icontract("require", lambda self, other: self.is_valid())
+    @cond_icontract("require", lambda self, other: other.is_valid())
     def covers_3d(self, other: Geometry) -> bool:
+        """
+        Check if this geometry covers another geometry in 3D.
+
+        Parameters
+        ----------
+        other : Geometry
+            The other geometry to check 3D coverage with.
+
+        Returns
+        -------
+        bool
+            True if this geometry covers the other geometry in 3D, False otherwise.
+        """
         return lib.sfcgal_geometry_covers_3d(self._geom, other._geom) == 1
 
-    @cond_icontract('require', lambda self: self.is_valid())
+    @cond_icontract("require", lambda self: self.is_valid())
     def triangulate_2dz(self) -> Geometry:
+        """
+        Compute the 2D triangulation of the geometry with Z values.
+
+        Returns
+        -------
+        Geometry
+            The resulting triangulated geometry with Z values.
+        """
         geom = lib.sfcgal_geometry_triangulate_2dz(self._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract('require', lambda self: self.is_valid())
+    @cond_icontract("require", lambda self: self.is_valid())
     def tessellate(self) -> Geometry:
+        """
+        Perform tessellation on the geometry.
+
+        Returns
+        -------
+        Geometry
+            The tessellated geometry.
+        """
         tri = lib.sfcgal_geometry_triangulate_2dz(self._geom)
         geom = lib.sfcgal_geometry_intersection(self._geom, tri)
 
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract('require', lambda self: self.is_valid())
+    @cond_icontract("require", lambda self: self.is_valid())
     def force_lhr(self) -> Geometry:
+        """
+        Force the geometry to have a left-hand rule (LHR) orientation.
+
+        Returns
+        -------
+        Geometry
+            The resulting geometry with LHR orientation.
+        """
         geom = lib.sfcgal_geometry_force_lhr(self._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract('require', lambda self: self.is_valid())
+    @cond_icontract("require", lambda self: self.is_valid())
     def force_rhr(self) -> Geometry:
+        """
+        Force the geometry to have a right-hand rule (RHR) orientation.
+
+        Returns
+        -------
+        Geometry
+            The resulting geometry with RHR orientation.
+        """
         geom = lib.sfcgal_geometry_force_rhr(self._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
     def is_valid(self) -> bool:
+        """
+        Check if the geometry is valid.
+
+        Returns
+        -------
+        bool
+            True if the geometry is valid, False otherwise.
+        """
         return lib.sfcgal_geometry_is_valid(self._geom) != 0
 
     def is_valid_detail(self) -> str:
+        """
+        Provide detailed information about the validity of the geometry.
+
+        Returns
+        -------
+        str
+            A string describing the reason if the geometry is invalid.
+            If valid, returns None.
+        """
         invalidity_reason = ffi.new("char **")
         invalidity_location = ffi.new("sfcgal_geometry_t **")
         lib.sfcgal_geometry_is_valid_detail(
@@ -267,169 +661,502 @@ class Geometry:
         return (ffi.string(invalidity_reason[0]).decode("utf-8"), None)
 
     def is_planar(self) -> bool:
+        """
+        Check if the geometry is planar.
+
+        Returns
+        -------
+        bool
+            True if the geometry is planar, False otherwise.
+        """
         return lib.sfcgal_geometry_is_planar(self._geom) == 1
 
-    @cond_icontract('require', lambda self: self.is_valid())
+    @cond_icontract("require", lambda self: self.is_valid())
     def orientation(self) -> int:
+        """
+        Get the orientation of the geometry.
+
+        Returns
+        -------
+        int
+            The orientation of the geometry.
+        """
         return lib.sfcgal_geometry_orientation(self._geom)
 
-    @cond_icontract('require', lambda self: self.is_valid())
+    @cond_icontract("require", lambda self: self.is_valid())
     def round(self, r) -> float:
+        """
+        Round the geometry to a specified precision.
+
+        Parameters
+        ----------
+        r : float
+            The precision to which to round the geometry.
+
+        Returns
+        -------
+        float
+            The rounded geometry.
+        """
         geom = lib.sfcgal_geometry_round(self._geom, r)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract('require', lambda self, other: self.is_valid())
-    @cond_icontract('require', lambda self, other: other.is_valid())
+    @cond_icontract("require", lambda self, other: self.is_valid())
+    @cond_icontract("require", lambda self, other: other.is_valid())
     def minkowski_sum(self, other: Geometry) -> Geometry:
+        """
+        Calculate the Minkowski sum of this geometry and another geometry.
+
+        Parameters
+        ----------
+        other : Geometry
+            The other geometry to calculate the Minkowski sum with.
+
+        Returns
+        -------
+        Geometry
+            The resulting Minkowski sum geometry.
+        """
         geom = lib.sfcgal_geometry_minkowski_sum(self._geom, other._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract('require', lambda self: self.is_valid())
+    @cond_icontract("require", lambda self: self.is_valid())
     def offset_polygon(self, radius: float) -> Geometry:
+        """
+        Create an offset polygon from the geometry.
+
+        Parameters
+        ----------
+        radius : float
+            The radius of the offset.
+
+        Returns
+        -------
+        Geometry
+            The resulting offset polygon geometry.
+        """
         geom = lib.sfcgal_geometry_offset_polygon(self._geom, radius)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract('require', lambda self: self.is_valid())
+    @cond_icontract("require", lambda self: self.is_valid())
     def extrude(self, extrude_x: float, extrude_y: float, extrude_z: float) -> Geometry:
+        """
+        Extrude the geometry in the specified direction.
+
+        Parameters
+        ----------
+        extrude_x : float
+            The distance to extrude in the x direction.
+        extrude_y : float
+            The distance to extrude in the y direction.
+        extrude_z : float
+            The distance to extrude in the z direction.
+
+        Returns
+        -------
+        Geometry
+            The resulting extruded geometry.
+        """
         geom = lib.sfcgal_geometry_extrude(self._geom, extrude_x, extrude_y, extrude_z)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract('require', lambda self: self.is_valid())
+    @cond_icontract("require", lambda self: self.is_valid())
     def straight_skeleton(self) -> Geometry:
+        """
+        Compute the straight skeleton of the geometry.
+
+        Returns
+        -------
+        Geometry
+            The resulting straight skeleton geometry.
+        """
         geom = lib.sfcgal_geometry_straight_skeleton(self._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract('require', lambda self: self.is_valid())
+    @cond_icontract("require", lambda self: self.is_valid())
     def straight_skeleton_distance_in_m(self) -> Geometry:
+        """
+        Compute the straight skeleton distance in meters.
+
+        Returns
+        -------
+        Geometry
+            The resulting geometry representing the straight skeleton distance.
+        """
         geom = lib.sfcgal_geometry_straight_skeleton_distance_in_m(self._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract('require', lambda self, height: self.is_valid())
-    @cond_icontract('require', lambda self, height: self.geom_type == "Polygon")
-    @cond_icontract('require', lambda self, height: height != 0)
+    @cond_icontract("require", lambda self, height: self.is_valid())
+    @cond_icontract("require", lambda self, height: self.geom_type == "Polygon")
+    @cond_icontract("require", lambda self, height: height != 0)
     def extrude_straight_skeleton(self, height: float) -> Geometry:
+        """
+        Extrude the geometry along its straight skeleton.
+
+        Parameters
+        ----------
+        height : float
+            The height to which the geometry will be extruded.
+
+        Returns
+        -------
+        Geometry
+            The resulting extruded geometry along the straight skeleton.
+        """
         geom = lib.sfcgal_geometry_extrude_straight_skeleton(self._geom, height)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract('require', lambda self, building_height, roof_height: self.is_valid())  # noqa: E501
-    @cond_icontract('require', lambda self, building_height, roof_height: self.geom_type == "Polygon")  # noqa: E501
-    @cond_icontract('require', lambda self, building_height, roof_height: roof_height != 0)  # noqa: E501
+    @cond_icontract(
+        "require", lambda self, building_height, roof_height: self.is_valid()
+    )  # noqa: E501
+    @cond_icontract(
+        "require",
+        lambda self, building_height, roof_height: self.geom_type == "Polygon",
+    )  # noqa: E501
+    @cond_icontract(
+        "require", lambda self, building_height, roof_height: roof_height != 0
+    )  # noqa: E501
     def extrude_polygon_straight_skeleton(
         self, building_height: float, roof_height: float
     ) -> Geometry:
+        """
+        Extrude a polygon along its straight skeleton with specified building
+        and roof heights.
+
+        Parameters
+        ----------
+        building_height : float
+            The height of the building.
+        roof_height : float
+            The height of the roof.
+
+        Returns
+        -------
+        Geometry
+            The resulting geometry with the specified building and roof heights.
+        """
         geom = lib.sfcgal_geometry_extrude_polygon_straight_skeleton(
             self._geom, building_height, roof_height
         )
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract('require', lambda self: self.is_valid())
+    @cond_icontract("require", lambda self: self.is_valid())
     def approximate_medial_axis(self) -> Geometry:
+        """
+        Compute the approximate medial axis of the geometry.
+
+        Returns
+        -------
+        Geometry
+            The resulting geometry representing the approximate medial axis.
+        """
         geom = lib.sfcgal_geometry_approximate_medial_axis(self._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract('require', lambda self, start, end: self.is_valid())
-    @cond_icontract('require', lambda self, start, end: -1.0 <= start <= 1.0)
-    @cond_icontract('require', lambda self, start, end: -1.0 <= end <= 1.0)
-    @cond_icontract('ensure', lambda result: result.is_valid())
+    @cond_icontract("require", lambda self, start, end: self.is_valid())
+    @cond_icontract("require", lambda self, start, end: -1.0 <= start <= 1.0)
+    @cond_icontract("require", lambda self, start, end: -1.0 <= end <= 1.0)
+    @cond_icontract("ensure", lambda result: result.is_valid())
     def line_sub_string(self, start: float, end: float) -> Geometry:
+        """
+        Extract a substring from the geometry represented as a line segment.
+
+        Parameters
+        ----------
+        start : float
+            The start parameter of the substring.
+        end : float
+            The end parameter of the substring.
+
+        Returns
+        -------
+        Geometry
+            The resulting substring geometry.
+        """
         geom = lib.sfcgal_geometry_line_sub_string(self._geom, start, end)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract('require', lambda self, alpha=1.0, allow_holes=False: self.is_valid())  # noqa: E501
-    @cond_icontract('require', lambda self, alpha=1.0, allow_holes=False: alpha >= 0.0)
+    @cond_icontract(
+        "require", lambda self, alpha=1.0, allow_holes=False: self.is_valid()
+    )  # noqa: E501
+    @cond_icontract("require", lambda self, alpha=1.0, allow_holes=False: alpha >= 0.0)
     def alpha_shapes(self, alpha: float = 1.0, allow_holes: bool = False) -> Geometry:
-        if 'MSC' in compiler:
+        """
+        Compute the alpha shapes of the geometry.
+
+        Parameters
+        ----------
+        alpha : float, optional
+            The alpha parameter (default is 1.0).
+        allow_holes : bool, optional
+            Whether to allow holes in the alpha shapes (default is False).
+
+        Returns
+        -------
+        Geometry
+            The resulting alpha shapes geometry.
+        """
+        if "MSC" in compiler:
             raise NotImplementedError(
                 "Alpha shapes methods is not available on Python versions using MSVC "
-                "compiler. See: https://github.com/CGAL/cgal/issues/7667")
+                "compiler. See: https://github.com/CGAL/cgal/issues/7667"
+            )
         geom = lib.sfcgal_geometry_alpha_shapes(self._geom, alpha, allow_holes)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract('require', lambda self, allow_holes=False, nb_components=1: self.is_valid())  # noqa: E501
-    @cond_icontract('require', lambda self, allow_holes=False, nb_components=1: nb_components >= 0)  # noqa: E501
+    @cond_icontract(
+        "require", lambda self, allow_holes=False, nb_components=1: self.is_valid()
+    )  # noqa: E501
+    @cond_icontract(
+        "require", lambda self, allow_holes=False, nb_components=1: nb_components >= 0
+    )  # noqa: E501
     def optimal_alpha_shapes(
-            self, allow_holes: bool = False, nb_components: int = 1) -> Geometry:
-        if 'MSC' in compiler:
+        self, allow_holes: bool = False, nb_components: int = 1
+    ) -> Geometry:
+        """
+        Compute the optimal alpha shapes of the geometry.
+
+        Parameters
+        ----------
+        allow_holes : bool, optional
+            Whether to allow holes in the optimal alpha shapes (default is False).
+        nb_components : int, optional
+            The number of components to consider (default is 1).
+
+        Returns
+        -------
+        Geometry
+            The resulting optimal alpha shapes geometry.
+        """
+        if "MSC" in compiler:
             raise NotImplementedError(
                 "Alpha shapes methods is not available on Python versions using MSVC "
-                "compiler. See: https://github.com/CGAL/cgal/issues/7667")
+                "compiler. See: https://github.com/CGAL/cgal/issues/7667"
+            )
         geom = lib.sfcgal_geometry_optimal_alpha_shapes(
             self._geom, allow_holes, nb_components
         )
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract('require', lambda self, allow_holes, nb_components: self.is_valid())
+    @cond_icontract("require", lambda self, allow_holes, nb_components: self.is_valid())
     def y_monotone_partition_2(
-            self, allow_holes: bool = False, nb_components: int = 1) -> Geometry:
-        geom = lib.sfcgal_y_monotone_partition_2(
-            self._geom
-        )
+        self, allow_holes: bool = False, nb_components: int = 1
+    ) -> Geometry:
+        """
+        Compute the Y-monotone partition of the geometry in 2D.
+
+        Parameters
+        ----------
+        allow_holes : bool, optional
+            Whether to allow holes in the partition (default is False).
+        nb_components : int, optional
+            The number of components to consider (default is 1).
+
+        Returns
+        -------
+        Geometry
+            The resulting Y-monotone partition geometry.
+        """
+        geom = lib.sfcgal_y_monotone_partition_2(self._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract('require', lambda self, allow_holes, nb_components: self.is_valid())
+    @cond_icontract("require", lambda self, allow_holes, nb_components: self.is_valid())
     def approx_convex_partition_2(
-            self, allow_holes: bool = False, nb_components: int = 1) -> Geometry:
-        geom = lib.sfcgal_approx_convex_partition_2(
-            self._geom
-        )
+        self, allow_holes: bool = False, nb_components: int = 1
+    ) -> Geometry:
+        """
+        Compute the approximate convex partition of the geometry in 2D.
+
+        Parameters
+        ----------
+        allow_holes : bool, optional
+            Whether to allow holes in the partition (default is False).
+        nb_components : int, optional
+            The number of components to consider (default is 1).
+
+        Returns
+        -------
+        Geometry
+            The resulting approximate convex partition geometry.
+        """
+        geom = lib.sfcgal_approx_convex_partition_2(self._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract('require', lambda self, allow_holes, nb_components: self.is_valid())
+    @cond_icontract("require", lambda self, allow_holes, nb_components: self.is_valid())
     def greene_approx_convex_partition_2(
-            self, allow_holes: bool = False, nb_components: int = 1) -> Geometry:
-        geom = lib.sfcgal_greene_approx_convex_partition_2(
-            self._geom
-        )
+        self, allow_holes: bool = False, nb_components: int = 1
+    ) -> Geometry:
+        """
+        Compute the Greene's approximate convex partition of the geometry in 2D.
+
+        Parameters
+        ----------
+        allow_holes : bool, optional
+            Whether to allow holes in the partition (default is False).
+        nb_components : int, optional
+            The number of components to consider (default is 1).
+
+        Returns
+        -------
+        Geometry
+            The resulting Greene's approximate convex partition geometry.
+        """
+        geom = lib.sfcgal_greene_approx_convex_partition_2(self._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract('require', lambda self, allow_holes, nb_components: self.is_valid())
+    @cond_icontract("require", lambda self, allow_holes, nb_components: self.is_valid())
     def optimal_convex_partition_2(
-            self, allow_holes: bool = False, nb_components: int = 1) -> Geometry:
-        geom = lib.sfcgal_optimal_convex_partition_2(
-            self._geom
-        )
+        self, allow_holes: bool = False, nb_components: int = 1
+    ) -> Geometry:
+        """
+        Compute the optimal convex partition of the geometry in 2D.
+
+        Parameters
+        ----------
+        allow_holes : bool, optional
+            Whether to allow holes in the partition (default is False).
+        nb_components : int, optional
+            The number of components to consider (default is 1).
+
+        Returns
+        -------
+        Geometry
+            The resulting optimal convex partition geometry.
+        """
+        geom = lib.sfcgal_optimal_convex_partition_2(self._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract('require', lambda self, other: self.is_valid())
-    @cond_icontract('require', lambda self, other: self.geom_type == "Polygon")
-    @cond_icontract('require', lambda self, other: other.is_valid())
-    @cond_icontract('require', lambda self, other: other.geom_type == "Point")
-    @cond_icontract('require', lambda self, other: self.intersects(other))
+    @cond_icontract("require", lambda self, other: self.is_valid())
+    @cond_icontract("require", lambda self, other: self.geom_type == "Polygon")
+    @cond_icontract("require", lambda self, other: other.is_valid())
+    @cond_icontract("require", lambda self, other: other.geom_type == "Point")
+    @cond_icontract("require", lambda self, other: self.intersects(other))
     def point_visibility(self, other: Geometry) -> Geometry:
+        """
+        Compute the visibility of a point from a polygon geometry.
+
+        Parameters
+        ----------
+        other : Geometry
+            A point geometry from which the visibility is computed.
+
+        Returns
+        -------
+        Geometry
+            The resulting geometry representing the visibility from the point to
+            the polygon.
+        """
         geom = lib.sfcgal_geometry_visibility_point(self._geom, other._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract('require', lambda self, other_a, other_b: self.is_valid())
-    @cond_icontract('require', lambda self, other_a, other_b: self.geom_type == "Polygon")  # noqa: E501
-    @cond_icontract('require', lambda self, other_a, other_b: other_a.is_valid())
-    @cond_icontract('require', lambda self, other_a, other_b: other_a.geom_type == "Point")  # noqa: E501
-    @cond_icontract('require', lambda self, other_a, other_b: other_b.is_valid())
-    @cond_icontract('require', lambda self, other_a, other_b: other_b.geom_type == "Point")  # noqa: E501
+    @cond_icontract("require", lambda self, other_a, other_b: self.is_valid())
     @cond_icontract(
-        'require', lambda self, other_a, other_b: self.has_exterior_edge(other_a, other_b)  # noqa: E501
+        "require", lambda self, other_a, other_b: self.geom_type == "Polygon"
+    )  # noqa: E501
+    @cond_icontract("require", lambda self, other_a, other_b: other_a.is_valid())
+    @cond_icontract(
+        "require", lambda self, other_a, other_b: other_a.geom_type == "Point"
+    )  # noqa: E501
+    @cond_icontract("require", lambda self, other_a, other_b: other_b.is_valid())
+    @cond_icontract(
+        "require", lambda self, other_a, other_b: other_b.geom_type == "Point"
+    )  # noqa: E501
+    @cond_icontract(
+        "require",
+        lambda self, other_a, other_b: self.has_exterior_edge(
+            other_a, other_b
+        ),  # noqa: E501
     )
     def segment_visibility(self, other_a: Geometry, other_b: Geometry) -> Geometry:
+        """
+        Compute the visibility of a segment between two points from a polygon geometry.
+
+        Parameters
+        ----------
+        other_a : Geometry
+            The first point geometry defining one endpoint of the segment.
+        other_b : Geometry
+            The second point geometry defining the other endpoint of the segment.
+
+        Returns
+        -------
+        Geometry
+            The resulting geometry representing the visibility along the segment between
+            the two points.
+        """
         geom = lib.sfcgal_geometry_visibility_segment(
-            self._geom, other_a._geom, other_b._geom)
+            self._geom, other_a._geom, other_b._geom
+        )
         return Geometry.from_sfcgal_geometry(geom)
 
     @property
     def wkt(self):
+        """
+        Get the Well-Known Text (WKT) representation of the geometry.
+
+        Returns
+        -------
+        str
+            The WKT representation of the geometry.
+        """
         return write_wkt(self._geom)
 
     def wktDecim(self, decim=8) -> str:
+        """
+        Get the WKT representation of the geometry with specified decimal precision.
+
+        Parameters
+        ----------
+        decim : int, optional
+            The number of decimal places to include in the WKT representation
+            (default is 8).
+
+        Returns
+        -------
+        str
+            The WKT representation of the geometry with the specified precision.
+        """
         return write_wkt(self._geom, decim)
 
     @property
     def wkb(self):
+        """
+        Get the Well-Known Binary (WKB) representation of the geometry.
+
+        Returns
+        -------
+        bytes
+            The WKB representation of the geometry.
+        """
         return write_wkb(self._geom)
 
     @property
     def hexwkb(self):
+        """
+        Get the hexadecimal representation of the Well-Known Binary (WKB) of the
+        geometry.
+
+        Returns
+        -------
+        str
+            The hexadecimal WKB representation of the geometry.
+        """
         return write_wkb(self._geom, True)
 
     def vtk(self, filename: str):
-        return lib.sfcgal_geometry_as_vtk_file(self._geom, bytes(filename, 'utf-8'))
+        """
+        Export the geometry to a VTK file.
+
+        Parameters
+        ----------
+        filename : str
+            The name of the file to which the geometry will be exported.
+
+        Returns
+        -------
+        None
+        """
+        return lib.sfcgal_geometry_as_vtk_file(self._geom, bytes(filename, "utf-8"))
 
     def __del__(self):
         if self._owned:
@@ -566,6 +1293,7 @@ class Point(Geometry):
         SFCGAL point associated to the Point instance. The operations on the geometry
         are done at the SFCGAL lower level.
     """
+
     def __init__(self, x, y, z=None, m=None):
         self._geom = self.sfcgal_geom_from_coordinates([x, y, z, m])
 
@@ -586,14 +1314,40 @@ class Point(Geometry):
 
     @property
     def x(self):
+        """Get the x-coordinate of the point.
+
+        Returns
+        -------
+        float
+            The x-coordinate of the point.
+        """
         return lib.sfcgal_point_x(self._geom)
 
     @property
     def y(self):
+        """Get the y-coordinate of the point.
+
+        Returns
+        -------
+        float
+            The y-coordinate of the point.
+        """
         return lib.sfcgal_point_y(self._geom)
 
     @property
     def z(self):
+        """Get the z-coordinate of the point.
+
+        Raises
+        ------
+        DimensionError
+            If the point has no z coordinate.
+
+        Returns
+        -------
+        float
+            The z-coordinate of the point.
+        """
         if lib.sfcgal_geometry_is_3d(self._geom):
             return lib.sfcgal_point_z(self._geom)
         else:
@@ -601,6 +1355,18 @@ class Point(Geometry):
 
     @property
     def m(self):
+        """Get the m-coordinate of the point.
+
+        Raises
+        ------
+        DimensionError
+            If the point has no m coordinate.
+
+        Returns
+        -------
+        float
+            The m-coordinate of the point.
+        """
         if lib.sfcgal_geometry_is_measured(self._geom):
             return lib.sfcgal_point_m(self._geom)
         else:
@@ -680,11 +1446,19 @@ class Point(Geometry):
 
 class LineString(Geometry):
     def __init__(self, coords):
+        """Initialize a LineString with given coordinates.
+
+        Parameters
+        ----------
+        coords : list of tuples
+            A list of tuples where each tuple represents the coordinates of a point in
+            the LineString.
+        """
         self._geom = self.sfcgal_geom_from_coordinates(coords)
 
     def __eq__(self, other: LineString) -> bool:
-        """Two LineStrings are equals if they contain the same points in the same order.
-        """
+        """Two LineStrings are equals if they contain the same points in the same
+        order."""
         if len(self) != len(other):
             return False
         for p, other_p in zip(self, other):
@@ -693,9 +1467,23 @@ class LineString(Geometry):
         return True
 
     def __len__(self):
+        """Return the number of points in the LineString.
+
+        Returns
+        -------
+        int
+            The number of points in the LineString.
+        """
         return lib.sfcgal_linestring_num_points(self._geom)
 
     def __iter__(self):
+        """Iterate over the points in the LineString.
+
+        Yields
+        ------
+        Point
+            The points in the LineString.
+        """
         for n in range(len(self)):
             yield Geometry.from_sfcgal_geometry(
                 lib.sfcgal_linestring_point_n(self._geom, n),
@@ -706,9 +1494,15 @@ class LineString(Geometry):
         """Returns the n-th point within a linestring. This method is internal and makes
         the assumption that the index is valid for the geometry.
 
-        :param n: index of the point to recover
-        :returns: Point at the index n
+        Parameters
+        ----------
+        n : int
+            Index of the point to recover.
 
+        Returns
+        -------
+        Point
+            Point at the index n.
         """
         return Geometry.from_sfcgal_geometry(
             lib.sfcgal_linestring_point_n(self._geom, n), owned=False
@@ -718,13 +1512,19 @@ class LineString(Geometry):
         """Get a point (or several) within a linestring, identified through an index or
         a slice.
 
-        Raises an IndexError if the key is unvalid for the geometry.
+        Raises an IndexError if the key is invalid for the geometry.
 
         Raises a TypeError if the key is neither an integer or a valid slice.
 
-        :param key: index (or slice) of the point(s) to recover
-        :returns: Point or list of Points
+        Parameters
+        ----------
+        key : int or slice
+            Index (or slice) of the point(s) to recover.
 
+        Returns
+        -------
+        Point or list of Points
+            The Point(s) at the specified index or indices.
         """
         length = self.__len__()
         if isinstance(key, int):
@@ -736,9 +1536,7 @@ class LineString(Geometry):
                 index = key
             return self.__get_point_n(index)
         elif isinstance(key, slice):
-            geoms = [
-                self.__get_point_n(index) for index in range(*key.indices(length))
-            ]
+            geoms = [self.__get_point_n(index) for index in range(*key.indices(length))]
             return geoms
         else:
             raise TypeError(
@@ -750,9 +1548,30 @@ class LineString(Geometry):
 
     @property
     def coords(self):
+        """Return the coordinates of the LineString as a CoordinateSequence.
+
+        Returns
+        -------
+        CoordinateSequence
+            A sequence of coordinates representing the points in the LineString.
+        """
         return CoordinateSequence(self)
 
     def has_edge(self, point_a: Point, point_b: Point) -> bool:
+        """Check if the LineString contains the edge between two points.
+
+        Parameters
+        ----------
+        point_a : Point
+            The first point of the edge.
+        point_b : Point
+            The second point of the edge.
+
+        Returns
+        -------
+        bool
+            True if the edge exists in the LineString, False otherwise.
+        """
         return is_segment_in_coordsequence(self.to_coordinates(), point_a, point_b)
 
     def to_coordinates(self) -> list:
@@ -796,7 +1615,26 @@ class LineString(Geometry):
 
 
 class Polygon(Geometry):
+    """Polygon
+
+    Attributes
+    ----------
+    _geom : _cffi_backend._CDatabase
+        SFCGAL polygon associated to the Polygon instance. The operations on the
+        geometry are done at the SFCGAL lower level.
+    """
+
     def __init__(self, exterior, interiors=None):
+        """Initialize a Polygon with given exterior and optional interior rings.
+
+        Parameters
+        ----------
+        exterior : list of tuples
+            A list of coordinates defining the exterior ring of the polygon.
+        interiors : list of list of tuples, optional
+            A list of interior rings, where each interior is defined by a list of
+            coordinates. Default is None, which initializes to an empty list.
+        """
         if interiors is None:
             interiors = []
         self._geom = self.sfcgal_geom_from_coordinates(
@@ -807,6 +1645,13 @@ class Polygon(Geometry):
         )
 
     def __iter__(self):
+        """Iterate over the rings of the Polygon.
+
+        Yields
+        ------
+        Geometry
+            The exterior and interior rings of the Polygon.
+        """
         for n in range(1 + self.n_interiors):
             yield self.__get_ring_n(n)
 
@@ -819,9 +1664,15 @@ class Polygon(Geometry):
 
         Raises a TypeError if the key is neither an integer or a valid slice.
 
-        :param key: index (or slice) of the point(s) to recover
-        :returns: Point or list of Points
+        Parameters
+        ----------
+        key : int or slice
+            Index (or slice) of the ring(s) to recover.
 
+        Returns
+        -------
+        Geometry or list of Geometry
+            The specified ring or a list of rings if a slice is provided.
         """
         length = 1 + self.n_interiors
         if isinstance(key, int):
@@ -833,9 +1684,7 @@ class Polygon(Geometry):
                 index = key
             return self.__get_ring_n(index)
         elif isinstance(key, slice):
-            geoms = [
-                self.__get_ring_n(index) for index in range(*key.indices(length))
-            ]
+            geoms = [self.__get_ring_n(index) for index in range(*key.indices(length))]
             return geoms
         else:
             raise TypeError(
@@ -847,6 +1696,16 @@ class Polygon(Geometry):
 
     def __eq__(self, other: Polygon) -> bool:
         """Two Polygons are equal if their rings (exterior and interior) are equal.
+
+        Parameters
+        ----------
+        other : Polygon
+            The Polygon to compare against.
+
+        Returns
+        -------
+        bool
+            True if the Polygons are equal, False otherwise.
         """
         if self.exterior != other.exterior:
             return False
@@ -859,16 +1718,37 @@ class Polygon(Geometry):
 
     @property
     def exterior(self):
+        """Get the exterior ring of the Polygon.
+
+        Returns
+        -------
+        Geometry
+            The exterior ring of the Polygon.
+        """
         return Geometry.from_sfcgal_geometry(
             lib.sfcgal_polygon_exterior_ring(self._geom), owned=False
         )
 
     @property
     def n_interiors(self):
+        """Get the number of interior rings in the Polygon.
+
+        Returns
+        -------
+        int
+            The number of interior rings.
+        """
         return lib.sfcgal_polygon_num_interior_rings(self._geom)
 
     @property
     def interiors(self):
+        """Get a list of the interior rings of the Polygon.
+
+        Returns
+        -------
+        list of Geometry
+            A list of interior rings.
+        """
         interior_rings = []
         for idx in range(self.n_interiors):
             interior_rings.append(
@@ -880,6 +1760,13 @@ class Polygon(Geometry):
 
     @property
     def rings(self):
+        """Get all the rings of the Polygon, including the exterior and interior rings.
+
+        Returns
+        -------
+        list of Geometry
+            A list containing the exterior ring followed by the interior rings.
+        """
         return [self.exterior] + self.interiors
 
     def __get_ring_n(self, n):
@@ -887,13 +1774,36 @@ class Polygon(Geometry):
         assumption that the index is valid for the geometry. The 0 index refers to the
         exterior ring.
 
-        :param n: index of the ring to recover
-        :returns: Ring at the index n
+        Parameters
+        ----------
+        n : int
+            Index of the ring to recover.
 
+        Returns
+        -------
+        Geometry
+            The ring at the specified index.
         """
         return self.rings[n]
 
     def has_exterior_edge(self, point_a: Point, point_b: Point) -> bool:
+        """Check if the polygon has an edge defined by the two given points.
+
+        This method verifies whether the line segment between point_a and point_b lies
+        within the exterior ring of the polygon.
+
+        Parameters
+        ----------
+        point_a : Point
+            The first point defining the edge.
+        point_b : Point
+            The second point defining the edge.
+
+        Returns
+        -------
+        bool
+            True if the edge is part of the exterior ring, False otherwise.
+        """
         poly_coordinates = self.to_coordinates()
         exterior_coordinates = poly_coordinates[0]
         return is_segment_in_coordsequence(exterior_coordinates, point_a, point_b)
@@ -952,22 +1862,74 @@ class Polygon(Geometry):
 
 class CoordinateSequence:
     def __init__(self, parent):
+        """Initialize the CoordinateSequence with a parent geometry.
+
+        Parameters
+        ----------
+        parent : Geometry
+            The parent geometry object that this sequence is associated with.
+        """
         # keep reference to parent to avoid garbage collection
         self._parent = parent
 
     def __len__(self):
+        """Return the number of coordinates in the sequence.
+
+        Returns
+        -------
+        int
+            The number of coordinates in the sequence.
+        """
         return self._parent.__len__()
 
     def __iter__(self):
+        """Iterate over the coordinates in the sequence.
+
+        Yields
+        ------
+        tuple
+            A tuple representing the coordinates of each point.
+        """
         length = self.__len__()
         for n in range(0, length):
             yield self.__get_coord_n(n)
 
     def __get_coord_n(self, n):
+        """Returns the n-th coordinate within the sequence.
+
+        This method makes the assumption that the index is valid for the geometry.
+
+        Parameters
+        ----------
+        n : int
+            Index of the coordinate to recover.
+
+        Returns
+        -------
+        tuple
+            A tuple representing the coordinates of the point at index n.
+        """
         point_n = lib.sfcgal_linestring_point_n(self._parent._geom, n)
         return Point.from_sfcgal_geometry(point_n).to_coordinates()
 
     def __getitem__(self, key):
+        """Get a coordinate (or several) within the sequence, identified through an
+        index or a slice.
+
+        Raises an IndexError if the key is invalid for the geometry.
+
+        Raises a TypeError if the key is neither an integer nor a valid slice.
+
+        Parameters
+        ----------
+        key : int or slice
+            Index (or slice) of the coordinate(s) to recover.
+
+        Returns
+        -------
+        tuple or list of tuples
+            The coordinate(s) at the specified index or slice.
+        """
         length = self.__len__()
         if isinstance(key, int):
             if key + length < 0 or key >= length:
@@ -992,18 +1954,66 @@ class CoordinateSequence:
 class GeometryCollectionBase(Geometry):
     @property
     def geoms(self):
+        """Return the geometries in the collection.
+
+        Returns
+        -------
+        GeometrySequence
+            A sequence of geometries contained in this collection.
+        """
         return GeometrySequence(self)
 
     def __len__(self):
+        """Return the number of geometries in the collection.
+
+        Returns
+        -------
+        int
+            The number of geometries in the collection.
+        """
         return len(self.geoms)
 
     def __iter__(self):
+        """Iterate over the geometries in the collection.
+
+        Yields
+        ------
+        Geometry
+            Each geometry in the collection.
+        """
         return self.geoms.__iter__()
 
     def __getitem__(self, index):
+        """Get a geometry (or several) within the collection, identified through an
+        index.
+
+        Raises an IndexError if the index is invalid for the geometry collection.
+
+        Parameters
+        ----------
+        index : int
+            Index of the geometry to recover.
+
+        Returns
+        -------
+        Geometry
+            The geometry at the specified index.
+        """
         return self.geoms[index]
 
     def __eq__(self, other):
+        """Check if two geometry collections are equal based on their geometries.
+
+        Parameters
+        ----------
+        other : GeometryCollectionBase
+            The other geometry collection to compare.
+
+        Returns
+        -------
+        bool
+            True if both collections contain the same geometries, False otherwise.
+        """
         return self.geoms == other.geoms
 
     def to_coordinates(self):
@@ -1103,12 +2113,34 @@ class MultiPolygon(GeometryCollectionBase):
 
 class Tin(GeometryCollectionBase):
     def __init__(self, coords=None):
+        """Initialize the Tin with the given coordinates.
+
+        Parameters
+        ----------
+        coords : list of tuples, optional
+            A list of coordinate tuples that define the vertices of the TIN.
+            If None, initializes an empty TIN.
+        """
         self._geom = Tin.sfcgal_geom_from_coordinates(coords)
 
     def __len__(self):
+        """Return the number of triangles in the TIN.
+
+        Returns
+        -------
+        int
+            The number of triangles that comprise the TIN.
+        """
         return lib.sfcgal_triangulated_surface_num_triangles(self._geom)
 
     def __iter__(self):
+        """Iterate over the triangles in the TIN.
+
+        Yields
+        ------
+        Geometry
+            Each triangle in the TIN as a Geometry object.
+        """
         for n in range(0, len(self)):
             yield Geometry.from_sfcgal_geometry(
                 lib.sfcgal_triangulated_surface_triangle_n(self._geom, n),
@@ -1116,12 +2148,43 @@ class Tin(GeometryCollectionBase):
             )
 
     def __get_geometry_n(self, n):
+        """Returns the n-th triangle within the TIN.
+
+        This method assumes that the index is valid for the TIN.
+
+        Parameters
+        ----------
+        n : int
+            Index of the triangle to recover.
+
+        Returns
+        -------
+        Geometry
+            The triangle at the specified index as a Geometry object.
+        """
         return Geometry.from_sfcgal_geometry(
             lib.sfcgal_triangulated_surface_triangle_n(self._geom, n),
             owned=False,
         )
 
     def __getitem__(self, key):
+        """Get a triangle (or several) within the TIN, identified through an index or a
+        slice.
+
+        Raises an IndexError if the key is invalid for the TIN.
+
+        Raises a TypeError if the key is neither an integer nor a valid slice.
+
+        Parameters
+        ----------
+        key : int or slice
+            Index (or slice) of the triangle(s) to recover.
+
+        Returns
+        -------
+        Geometry or list of Geometry
+            The triangle(s) at the specified index or slice.
+        """
         length = self.__len__()
         if isinstance(key, int):
             if key + length < 0 or key >= length:
@@ -1145,9 +2208,33 @@ class Tin(GeometryCollectionBase):
             )
 
     def __eq__(self, other):
+        """Check if two TINs are equal based on their triangles.
+
+        Parameters
+        ----------
+        other : Tin
+            The other TIN to compare.
+
+        Returns
+        -------
+        bool
+            True if both TINs contain the same triangles, False otherwise.
+        """
         return self[:] == other[:]
 
     def to_multipolygon(self, wrapped=False) -> MultiPolygon:
+        """Convert the TIN to a MultiPolygon.
+
+        Parameters
+        ----------
+        wrapped : bool, optional
+            If True, wrap the result in a Geometry object. Defaults to False.
+
+        Returns
+        -------
+        MultiPolygon
+            A MultiPolygon representation of the TIN.
+        """
         multipolygon = lib.sfcgal_multi_polygon_create()
         num_geoms = lib.sfcgal_triangulated_surface_num_triangles(self._geom)
         for geom_idx in range(num_geoms):
@@ -1185,13 +2272,35 @@ class Tin(GeometryCollectionBase):
 
 class Triangle(Geometry):
     def __init__(self, coords=None):
+        """Initialize the Triangle with the given coordinates.
+
+        Parameters
+        ----------
+        coords : list of tuples, optional
+            A list of coordinate tuples that define the vertices of the triangle.
+            If None, initializes an empty triangle.
+        """
         self._geom = Triangle.sfcgal_geom_from_coordinates(coords)
 
     @property
     def coords(self):
+        """Get the coordinates of the triangle.
+
+        Returns
+        -------
+        list of tuples
+            The coordinates of the triangle's vertices.
+        """
         return self.to_coordinates()
 
     def __iter__(self):
+        """Iterate over the vertices of the triangle.
+
+        Yields
+        ------
+        Geometry
+            Each vertex of the triangle as a Geometry object.
+        """
         for n in range(3):
             yield Geometry.from_sfcgal_geometry(
                 lib.sfcgal_triangle_vertex(self._geom, n),
@@ -1199,12 +2308,43 @@ class Triangle(Geometry):
             )
 
     def __get_geometry_n(self, n):
+        """Returns the n-th vertex of the triangle.
+
+        This method assumes that the index is valid for the triangle.
+
+        Parameters
+        ----------
+        n : int
+            Index of the vertex to recover.
+
+        Returns
+        -------
+        Geometry
+            The vertex at the specified index as a Geometry object.
+        """
         return Geometry.from_sfcgal_geometry(
             lib.sfcgal_triangle_vertex(self._geom, n),
             owned=False,
         )
 
     def __getitem__(self, key):
+        """Get a vertex (or several) within the triangle, identified through an index
+        or a slice.
+
+        Raises an IndexError if the key is invalid for the triangle.
+
+        Raises a TypeError if the key is neither an integer nor a valid slice.
+
+        Parameters
+        ----------
+        key : int or slice
+            Index (or slice) of the vertex(es) to recover.
+
+        Returns
+        -------
+        Geometry or list of Geometry
+            The vertex(es) at the specified index or slice.
+        """
         length = 3
         if isinstance(key, int):
             if key + length < 0 or key >= length:
@@ -1228,11 +2368,35 @@ class Triangle(Geometry):
             )
 
     def __eq__(self, other: Triangle) -> bool:
+        """Check if two triangles are equal based on their vertices.
+
+        Parameters
+        ----------
+        other : Triangle
+            The other triangle to compare.
+
+        Returns
+        -------
+        bool
+            True if both triangles contain the same vertices, False otherwise.
+        """
         if not isinstance(other, Triangle):
             return False
         return all(vertex == other_vertex for vertex, other_vertex in zip(self, other))
 
     def to_polygon(self, wrapped: bool = True) -> Polygon:
+        """Convert the triangle to a Polygon.
+
+        Parameters
+        ----------
+        wrapped : bool, optional
+            If True, wrap the result in a Geometry object. Defaults to True.
+
+        Returns
+        -------
+        Polygon
+            A Polygon representation of the triangle.
+        """
         exterior = lib.sfcgal_linestring_create()
         for point_idx in range(4):
             point = lib.sfcgal_triangle_vertex(self._geom, point_idx)
@@ -1273,7 +2437,7 @@ class Triangle(Geometry):
             triangle = lib.sfcgal_triangle_create_from_points(
                 Point.sfcgal_geom_from_coordinates(coordinates[0]),
                 Point.sfcgal_geom_from_coordinates(coordinates[1]),
-                Point.sfcgal_geom_from_coordinates(coordinates[2])
+                Point.sfcgal_geom_from_coordinates(coordinates[2]),
             )
         else:
             triangle = lib.sfcgal_triangle_create()
@@ -1283,12 +2447,34 @@ class Triangle(Geometry):
 
 class PolyhedralSurface(GeometryCollectionBase):
     def __init__(self, coords=None):
+        """Initialize the PolyhedralSurface with the given coordinates.
+
+        Parameters
+        ----------
+        coords : list of tuples, optional
+            A list of coordinate tuples that define the polygons of the polyhedral
+            surface. If None, initializes an empty polyhedral surface.
+        """
         self._geom = PolyhedralSurface.sfcgal_geom_from_coordinates(coords)
 
     def __len__(self):
+        """Get the number of polygons in the polyhedral surface.
+
+        Returns
+        -------
+        int
+            The number of polygons contained within the polyhedral surface.
+        """
         return lib.sfcgal_polyhedral_surface_num_polygons(self._geom)
 
     def __iter__(self):
+        """Iterate over the polygons of the polyhedral surface.
+
+        Yields
+        ------
+        Geometry
+            Each polygon of the polyhedral surface as a Geometry object.
+        """
         for n in range(0, len(self)):
             yield Geometry.from_sfcgal_geometry(
                 lib.sfcgal_polyhedral_surface_polygon_n(self._geom, n),
@@ -1296,12 +2482,43 @@ class PolyhedralSurface(GeometryCollectionBase):
             )
 
     def __get_geometry_n(self, n):
+        """Returns the n-th polygon within the polyhedral surface.
+
+        This method assumes that the index is valid for the geometry.
+
+        Parameters
+        ----------
+        n : int
+            Index of the polygon to recover.
+
+        Returns
+        -------
+        Geometry
+            The polygon at the specified index as a Geometry object.
+        """
         return Geometry.from_sfcgal_geometry(
             lib.sfcgal_polyhedral_surface_polygon_n(self._geom, n),
             owned=False,
         )
 
     def __getitem__(self, key):
+        """Get a polygon (or several) within the polyhedral surface, identified through
+        an index or a slice.
+
+        Raises an IndexError if the key is invalid for the geometry.
+
+        Raises a TypeError if the key is neither an integer nor a valid slice.
+
+        Parameters
+        ----------
+        key : int or slice
+            Index (or slice) of the polygon(s) to recover.
+
+        Returns
+        -------
+        Geometry or list of Geometry
+            The polygon(s) at the specified index or slice.
+        """
         length = self.__len__()
         if isinstance(key, int):
             if key + length < 0 or key >= length:
@@ -1325,9 +2542,21 @@ class PolyhedralSurface(GeometryCollectionBase):
             )
 
     def __eq__(self, other):
+        """Check if two polyhedral surfaces are equal based on their polygons.
+
+        Parameters
+        ----------
+        other : PolyhedralSurface
+            The other polyhedral surface to compare.
+
+        Returns
+        -------
+        bool
+            True if both polyhedral surfaces contain the same polygons, False otherwise.
+        """
         return self[:] == other[:]
 
-    @cond_icontract('require', lambda self: self.is_valid())
+    @cond_icontract("require", lambda self: self.is_valid())
     def to_solid(self) -> Solid:
         """Convert the polyhedralsurface into a solid.
 
@@ -1363,24 +2592,46 @@ class PolyhedralSurface(GeometryCollectionBase):
 
 class Solid(GeometryCollectionBase):
     def __init__(self, coords=None):
+        """Initialize the Solid with the given coordinates.
+
+        Parameters
+        ----------
+        coords : list of list of tuples, optional
+            A list where the first element is the exterior shell coordinates, and the
+            subsequent elements are the interior shell coordinates. If None, initializes
+            an empty solid.
+        """
         self._geom = Solid.sfcgal_geom_from_coordinates(coords)
 
     def __iter__(self):
+        """Iterate over the shells of the solid.
+
+        Yields
+        ------
+        Geometry
+            Each shell of the solid as a Geometry object.
+        """
         for n in range(self.n_shells):
             yield self.__get_shell_n(n)
 
     def __getitem__(self, key):
         """Get a shell (or several) within a solid, identified through an index or a
         slice. The first shell is always the exterior shell, the next ones are the
-        interior shell (optional).
+        interior shells (optional).
 
-        Raises an IndexError if the key is unvalid for the geometry.
+        Raises an IndexError if the key is invalid for the geometry.
 
-        Raises a TypeError if the key is neither an integer or a valid slice.
+        Raises a TypeError if the key is neither an integer nor a valid slice.
 
-        :param key: index (or slice) of the polyhedral surface(s) to recover
-        :returns: PolyhedralSurface or list of PolyhedralSurface
+        Parameters
+        ----------
+        key : int or slice
+            Index (or slice) of the shell(s) to recover.
 
+        Returns
+        -------
+        PolyhedralSurface or list of PolyhedralSurface
+            The shell(s) at the specified index or slice.
         """
         length = self.n_shells
         if isinstance(key, int):
@@ -1392,9 +2643,7 @@ class Solid(GeometryCollectionBase):
                 index = key
             return self.__get_shell_n(index)
         elif isinstance(key, slice):
-            geoms = [
-                self.__get_shell_n(index) for index in range(*key.indices(length))
-            ]
+            geoms = [self.__get_shell_n(index) for index in range(*key.indices(length))]
             return geoms
         else:
             raise TypeError(
@@ -1405,7 +2654,17 @@ class Solid(GeometryCollectionBase):
             )
 
     def __eq__(self, other: Solid) -> bool:
-        """Two Solids are equal if their shells (exterior and interior(s)) are equal.
+        """Two Solids are equal if their shells (exterior and interior) are equal.
+
+        Parameters
+        ----------
+        other : Solid
+            The other solid to compare.
+
+        Returns
+        -------
+        bool
+            True if both solids contain the same shells, False otherwise.
         """
         if self.n_shells != other.n_shells:
             return False
@@ -1413,10 +2672,24 @@ class Solid(GeometryCollectionBase):
 
     @property
     def n_shells(self):
+        """Get the number of shells in the solid.
+
+        Returns
+        -------
+        int
+            The number of shells contained within the solid.
+        """
         return lib.sfcgal_solid_num_shells(self._geom)
 
     @property
     def shells(self):
+        """Get the shells of the solid.
+
+        Returns
+        -------
+        list of Geometry
+            A list of shells as Geometry objects.
+        """
         _shells = []
         for idx in range(self.n_shells):
             _shells.append(
@@ -1427,17 +2700,35 @@ class Solid(GeometryCollectionBase):
         return _shells
 
     def __get_shell_n(self, n):
-        """Returns the n-th shell within a solid. This method is internal and makes the
-        assumption that the index is valid for the geometry. The 0 index refers to the
-        exterior shell.
+        """Returns the n-th shell within the solid. This method is internal and makes
+        the assumption that the index is valid for the geometry. The 0 index refers to
+        the exterior shell.
 
-        :param n: index of the ring to recover
-        :returns: Ring at the index n
+        Parameters
+        ----------
+        n : int
+            Index of the shell to recover.
 
+        Returns
+        -------
+        PolyhedralSurface
+            The shell at the specified index.
         """
         return self.shells[n]
 
     def to_polyhedralsurface(self, wrapped: bool = True):
+        """Convert the solid to a PolyhedralSurface.
+
+        Parameters
+        ----------
+        wrapped : bool, optional
+            If True, wrap the returned geometry in a Geometry object. Defaults to True.
+
+        Returns
+        -------
+        PolyhedralSurface
+            The corresponding PolyhedralSurface representation of the solid.
+        """
         phs_geom = lib.sfcgal_polyhedral_surface_create()
 
         for shell in self.shells:
@@ -1455,14 +2746,13 @@ class Solid(GeometryCollectionBase):
 
         Parameters
         ----------
-        coordinates: list
-            Solid coordinates.
+        coordinates : list
+            A list of coordinate tuples representing the solid's shells.
 
         Returns
         -------
         _cffi_backend._CDatabase
-            A pointer towards a SFCGAL Solid
-
+            A pointer towards a SFCGAL Solid.
         """
         solid = lib.sfcgal_solid_create()
         if coordinates:
@@ -1520,9 +2810,7 @@ class GeometryCollection(GeometryCollectionBase):
             Geojson-like representation of the geometry collection
 
         """
-        return {
-            "type": self.geom_type, "geometries": [geom.to_dict() for geom in self]
-        }
+        return {"type": self.geom_type, "geometries": [geom.to_dict() for geom in self]}
 
     @classmethod
     def from_dict(cls, geojson_data: dict) -> GeometryCollection:
@@ -1565,10 +2853,24 @@ class GeometryCollection(GeometryCollectionBase):
 
 class GeometrySequence:
     def __init__(self, parent):
+        """Initialize the GeometrySequence with a parent GeometryCollection.
+
+        Parameters
+        ----------
+        parent : GeometryCollectionBase
+            The parent geometry collection that this sequence belongs to.
+        """
         # keep reference to parent to avoid garbage collection
         self._parent = parent
 
     def __iter__(self):
+        """Iterate over the geometries in the sequence.
+
+        Yields
+        ------
+        Geometry
+            Each geometry in the sequence as a Geometry object.
+        """
         for n in range(0, len(self)):
             yield Geometry.from_sfcgal_geometry(
                 lib.sfcgal_geometry_collection_geometry_n(self._parent._geom, n),
@@ -1576,15 +2878,51 @@ class GeometrySequence:
             )
 
     def __len__(self):
+        """Get the number of geometries in the sequence.
+
+        Returns
+        -------
+        int
+            The number of geometries in the collection.
+        """
         return lib.sfcgal_geometry_collection_num_geometries(self._parent._geom)
 
     def __get_geometry_n(self, n):
+        """Retrieve the n-th geometry in the sequence.
+
+        Parameters
+        ----------
+        n : int
+            The index of the geometry to retrieve.
+
+        Returns
+        -------
+        Geometry
+            The geometry at the specified index.
+        """
         return Geometry.from_sfcgal_geometry(
             lib.sfcgal_geometry_collection_geometry_n(self._parent._geom, n),
             owned=False,
         )
 
     def __getitem__(self, key):
+        """Get a geometry (or several) within the sequence, identified through an index
+        or a slice.
+
+        Raises an IndexError if the key is invalid for the geometry.
+
+        Raises a TypeError if the key is neither an integer nor a valid slice.
+
+        Parameters
+        ----------
+        key : int or slice
+            Index (or slice) of the geometry or geometries to recover.
+
+        Returns
+        -------
+        Geometry or list of Geometry
+            The geometry or list of geometries at the specified index or slice.
+        """
         length = self.__len__()
         if isinstance(key, int):
             if key + length < 0 or key >= length:
@@ -1608,9 +2946,22 @@ class GeometrySequence:
             )
 
     def __eq__(self, other):
+        """Check equality between this geometry sequence and another.
+
+        Parameters
+        ----------
+        other : GeometrySequence
+            The other geometry sequence to compare.
+
+        Returns
+        -------
+        bool
+            True if both geometry sequences are equal, False otherwise.
+        """
         return self[:] == other[:]
 
 
+# Mapping of geometry types to their respective classes
 geom_type_to_cls = {
     lib.SFCGAL_TYPE_POINT: Point,
     lib.SFCGAL_TYPE_LINESTRING: LineString,
@@ -1625,6 +2976,7 @@ geom_type_to_cls = {
     lib.SFCGAL_TYPE_SOLID: Solid,
 }
 
+# Dictionary mapping geometry names to their corresponding type IDs
 geom_types = {
     "Point": lib.SFCGAL_TYPE_POINT,
     "LineString": lib.SFCGAL_TYPE_LINESTRING,
@@ -1638,10 +2990,28 @@ geom_types = {
     "PolyhedralSurface": lib.SFCGAL_TYPE_POLYHEDRALSURFACE,
     "SOLID": lib.SFCGAL_TYPE_SOLID,
 }
+
+# Reverse mapping from type IDs to geometry names
 geom_types_r = dict((v, k) for k, v in geom_types.items())
 
 
 def is_segment_in_coordsequence(coords: list, point_a: Point, point_b: Point) -> bool:
+    """Check if the segment defined by two points is in the coordinate sequence.
+
+    Parameters
+    ----------
+    coords : list
+        A list of coordinate tuples.
+    point_a : Point
+        The first point defining the segment.
+    point_b : Point
+        The second point defining the segment.
+
+    Returns
+    -------
+    bool
+        True if the segment is found in the coordinate sequence, False otherwise.
+    """
     for c1, c2 in zip(coords[1:], coords[:-1]):
         # (point_a, point_b) is in the coord sequence
         if c1 == (point_a.x, point_a.y) and c2 == (point_b.x, point_b.y):
