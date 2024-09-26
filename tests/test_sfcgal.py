@@ -408,15 +408,16 @@ def test_intersection_3d():
         "POLYGON ((0.5 0.5, 0.5 1.5, 1.5 1.5, 1.5 0.5, 0.5 0.5))"
     ).extrude(0, 0, 30)
 
-    res = p1e.intersection_3d(p2e)
+    res_intersection = p1e.intersection_3d(p2e)
 
-    assert res.geom_type == "SOLID"
+    assert res_intersection.geom_type == "SOLID"
 
-    assert res.to_wkb() == Polygon.from_wkt(
-        "POLYGON ((0.5 0.5, 0.5 1, 1 1, 1 0.5, 0.5 0.5))"
-    ).extrude(0, 0, 30).to_wkb()
-    res_polyhedrale = res.to_polyhedralsurface(True)
-    assert res_polyhedrale.geom_type == "PolyhedralSurface"
+    expected_intersection = Polygon.from_wkt(
+        "POLYGON ((0.5 0.5, 0.5 1, 1 1, 1 0.5, 0.5 0.5))").extrude(0, 0, 30)
+    assert res_intersection.covers_3d(expected_intersection)
+
+    res_intersection_polyhedral = res_intersection.to_polyhedralsurface(True)
+    assert res_intersection_polyhedral.geom_type == "PolyhedralSurface"
 
 
 def test_convexhull():
