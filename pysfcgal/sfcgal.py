@@ -1332,7 +1332,7 @@ class Geometry:
         return {"type": self.geom_type, "coordinates": self.to_coordinates()}
 
     @classmethod
-    def from_coordinates(cls, coordinates: list) -> Geometry:
+    def from_coordinates(cls, coordinates: list) -> Optional[Geometry]:
         """Instantiates a Geometry starting from a list of coordinates.
 
         The geometry class may be Point, LineString, Polygon, ...
@@ -1350,7 +1350,7 @@ class Geometry:
         return cls(coordinates)
 
     @classmethod
-    def from_dict(cls, geojson_data: dict) -> Geometry:
+    def from_dict(cls, geojson_data: dict) -> Optional[Geometry]:
         """Instantiates a Geometry starting from a geojson-like dictionnary.
 
         The dictionary must contain 'type' and 'coordinates' keys; the 'type' value
@@ -2154,7 +2154,7 @@ class Polygon(Geometry):
         return [ring.to_coordinates() for ring in self.rings]
 
     @classmethod
-    def from_coordinates(cls, coordinates: list):
+    def from_coordinates(cls, coordinates: list) -> Optional[Polygon]:
         """Instantiates a Polygon starting from a list of coordinates.
 
         Parameters
