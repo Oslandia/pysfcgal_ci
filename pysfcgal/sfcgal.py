@@ -1,3 +1,8 @@
+"""The `sfcgal` module is the main module of PySFCGAL.
+
+It contains the definition of every geometry classes, plus some I/O functions.
+"""
+
 from __future__ import annotations
 
 import platform
@@ -28,6 +33,9 @@ lib.sfcgal_init()
 
 
 class DimensionError(Exception):
+    """Indicates a dimension error, e.g. requesting for the Z coordinates in a 2D-point.
+
+    """
     pass
 
 
@@ -103,6 +111,21 @@ def write_wkb(geom, asHex=False):
 
 
 class Geometry:
+    """Geometry mother class, from which every other geometry class inheritates.
+
+    It defines a large bunch of methods that are shared along every geometries.
+
+    Attributes
+    ----------
+    _owned : bool, default True
+        If True, the Python geometry owns the low-level SFCGAL geometry, which is
+        removed when the Python structure is cleaned by the garbage collector.
+
+    _geom : _cffi_backend._CDatabase
+        SFCGAL geometry associated to the Python Geometry. The operations on the
+        geometry are done at the SFCGAL lower level.
+
+    """
     _owned = True
 
     @cond_icontract('require', lambda self, other: self.is_valid())
@@ -488,6 +511,17 @@ class Geometry:
 
 
 class Point(Geometry):
+    """Point
+
+    Attributes
+    ----------
+    _owned : bool, default True
+        If True, the Python geometry owns the low-level SFCGAL geometry, which is
+        removed when the Python structure is cleaned by the garbage collector.
+    _geom : _cffi_backend._CDatabase
+        SFCGAL point associated to the Point instance. The operations on the geometry
+        are done at the SFCGAL lower level.
+    """
     def __init__(self, x, y, z=None, m=None):
         # TODO: support coordinates as a list
         if z is None and m is None:
