@@ -52,8 +52,11 @@ target/
 # PyCharm
 .idea
 
-# Venv 
+# Venv
 .venv
 
 # Docs
 ./docs/site
+
+# VS Code
+.vscode
