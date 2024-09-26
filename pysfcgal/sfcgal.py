@@ -1347,7 +1347,7 @@ class Geometry:
         Geometry
             An instance of the corresponding geometry type
         """
-        return cls(coordinates)
+        return cls(coordinates)  # type: ignore
 
     @classmethod
     def from_dict(cls, geojson_data: dict) -> Optional[Geometry]:
