@@ -1,5 +1,74 @@
 # PySFCGAL Changelog
 
+## v2.0.0 (2024-09-26)
+
+### BREAKING CHANGE
+
+The following functions have been removed, and replaced by methods in the geometry classes:
+
+- pysfcgal.sfcgal.shape
+- pysfcgal.sfcgal._shape
+- pysfcgal.sfcgal.point_from_coordinates
+- pysfcgal.sfcgal.linestring_from_coordinates
+- pysfcgal.sfcgal.triangle_from_coordinates
+- pysfcgal.sfcgal.polygon_from_coordinates
+- pysfcgal.sfcgal.multipoint_from_coordinates
+- pysfcgal.sfcgal.multilinestring_from_coordinates
+- pysfcgal.sfcgal.multipolygon_from_coordinates
+- pysfcgal.sfcgal.tin_from_coordinates
+- pysfcgal.sfcgal.geometry_collection_from_coordinates
+- pysfcgal.sfcgal.polyhedralsurface_from_coordinates
+- pysfcgal.sfcgal.solid_from_coordinates
+- pysfcgal.sfcgal.mapping
+- pysfcgal.sfcgal.point_to_coordinates
+- pysfcgal.sfcgal.linestring_to_coordinates
+- pysfcgal.sfcgal.polygon_to_coordinates
+- pysfcgal.sfcgal.multipoint_to_coordinates
+- pysfcgal.sfcgal.multilinestring_to_coordinates
+- pysfcgal.sfcgal.multipolygon_to_coordinates
+- pysfcgal.sfcgal.geometrycollection_to_coordinates
+- pysfcgal.sfcgal.triangle_to_coordinates
+- pysfcgal.sfcgal.tin_to_coordinates
+- pysfcgal.sfcgal.polyhedralsurface_to_coordinates
+- pysfcgal.sfcgal.solid_to_coordinates
+- pysfcgal.sfcgal.triangle_to_polygon
+- pysfcgal.sfcgal.tin_to_multipolygon
+- pysfcgal.sfcgal.solid_to_polyhedralsurface
+
+### Feat
+
+- Polyhedralsurface.to_solid()
+- update sfcgal_def_msvc
+- update C API after recent changes in SFCGAL
+- 2D- and 3D-translations
+- convert the IO functions as new Geometry class methods
+- scale operations
+- write geometries as VTK/OBJ files/strings
+- implement rotation operations
+- buffer 3D on Point and LineString
+- straight skeleton partition
+- support MultiSolid
+
+### Fix
+
+- add C files to package_data
+- fix the Python image name in the CI jobs
+- do not directly invoke setup.py to build windows package
+- Geometry.extrude() returns a Solid instead of a PolyhedralSurface
+- fix vtk functions
+- fix memory issue by using lib.sfcgal_geometry_clone
+- **test**: Fix WKT in tests after https://gitlab.com/sfcgal/SFCGAL/-/merge_requests/361
+- icontract decorators must have a lambda as the first parameter
+- call the same decorator several times
+
+### Refactor
+
+- split test on geometries, a module per geometry type
+- build geometries from coordinates and geojson-like data
+- geom-to-coordinates converters as geometry class methods
+- wrap_geom becomes a method of the Geometry class
+- geom1_to_geom2 converters considered as geometry class methods
+
 ## Version 1.5.2 (2024-07-25)
 
 ### New Features
