@@ -1,10 +1,10 @@
-from pysfcgal.sfcgal import read_wkt
+from pysfcgal.sfcgal import Point
 
 
 def wkt_leak():
     while True:
-        p = read_wkt("POINT (1 2)")
-        p.wkt
+        p = Point.from_wkt("POINT (1 2)")
+        p.to_wkt()
 
 
 if __name__ == "__main__":

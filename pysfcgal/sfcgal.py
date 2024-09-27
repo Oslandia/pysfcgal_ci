@@ -6,6 +6,7 @@ It contains the definition of every geometry classes, plus some I/O functions.
 from __future__ import annotations
 
 import platform
+from typing import Union
 
 from ._sfcgal import ffi, lib
 
@@ -51,176 +52,6 @@ def sfcgal_full_version():
     """Returns the full version string of SFCGAL"""
     version = ffi.string(lib.sfcgal_full_version()).decode("utf-8")
     return version
-
-
-def read_wkt(wkt):
-    """Parse a Well-Known Text (WKT) representation into a Geometry object.
-
-    This function takes a WKT string and converts it into a `Geometry` object
-    by utilizing the SFCGAL library's WKT parsing capabilities.
-
-    Parameters
-    ----------
-    wkt : str
-        The Well-Known Text (WKT) string representing the geometry.
-
-    Returns
-    -------
-    Geometry
-        A `Geometry` object parsed from the WKT string.
-    """
-    return Geometry.from_sfcgal_geometry(_read_wkt(wkt))
-
-
-def _read_wkt(wkt):
-    """
-    Internal function to read Well-Known Text (WKT) and return the
-    SFCGAL geometry object.
-
-    This function converts the WKT string into a UTF-8 encoded byte string,
-    and uses the SFCGAL library to create a geometry object from the WKT.
-
-    Parameters
-    ----------
-    wkt : str
-        The Well-Known Text (WKT) string representing the geometry.
-
-    Returns
-    -------
-    _cffi_backend._CDatabase
-        A pointer towards a SFCGAL Point
-    """
-    wkt = bytes(wkt, encoding="utf-8")
-    return lib.sfcgal_io_read_wkt(wkt, len(wkt))
-
-
-def read_wkb(wkb):
-    """
-    Parse a Well-Known Binary (WKB) representation into a Geometry object.
-
-    This function takes a WKB byte string and converts it into a `Geometry` object
-    by utilizing the SFCGAL library's WKB parsing capabilities.
-
-    Parameters
-    ----------
-    wkb : bytes
-        The Well-Known Binary (WKB) byte string representing the geometry.
-
-    Returns
-    -------
-    Geometry
-        A `Geometry` object parsed from the WKB byte string.
-    """
-    return Geometry.from_sfcgal_geometry(_read_wkb(wkb))
-
-
-def _read_wkb(wkb):
-    """Internal function to read a Well-Known Binary (WKB) representation
-    and return the SFCGAL geometry object.
-
-    This function accepts a WKB representation in either binary format
-    (bytes or bytearray) or hexadecimal string format,
-    converts it into a UTF-8 encoded byte string, and uses the SFCGAL
-    library to generate the corresponding geometry object.
-
-    Parameters
-    ----------
-    wkb : bytes, bytearray, or str
-        The Well-Known Binary (WKB) data representing the geometry.
-        - If a `bytes` or `bytearray` object is provided, it is automatically
-        converted to a hexadecimal string.
-        - If a `str` is provided, it must already be a hexadecimal string.
-
-    Returns
-    -------
-    _cffi_backend._CDatabase
-        A pointer towards a SFCGAL Geometry
-    """
-    if isinstance(wkb, (bytes, bytearray)):
-        wkb = wkb.hex()
-    elif not isinstance(wkb, str):
-        raise TypeError("WKB must be a hexadecimal str or data binary")
-    wkb = bytes(wkb, encoding="utf-8")
-    return lib.sfcgal_io_read_wkb(wkb, len(wkb))
-
-
-def write_wkt(geom, decim=-1):
-    """Convert a geometry object into its Well-Known Text (WKT) representation.
-
-    This function takes a geometry object and returns its WKT representation as a
-    string.
-    If the `decim` parameter is provided and is non-negative, the WKT will include
-    a specific number of decimal places.
-
-    Parameters
-    ----------
-    geom : Geometry or SFCGAL.Geometry
-        The geometry object to be converted. If the input is a `Geometry` instance,
-        its internal SFCGAL geometry object is extracted for the WKT conversion.
-
-    decim : int, optional
-        The number of decimal places to include in the WKT output.
-        If `decim` is negative (default), the WKT is returned without a specific
-        decimal precision.
-
-    Returns
-    -------
-    str
-        The Well-Known Text (WKT) representation of the geometry.
-    """
-    if isinstance(geom, Geometry):
-        geom = geom._geom
-    try:
-        buf = ffi.new("char**")
-        length = ffi.new("size_t*")
-        if decim >= 0:
-            lib.sfcgal_geometry_as_text_decim(geom, decim, buf, length)
-        else:
-            lib.sfcgal_geometry_as_text(geom, buf, length)
-        wkt = ffi.string(buf[0], length[0]).decode("utf-8")
-    finally:
-        # we're responsible for free'ing the memory
-        if not buf[0] == ffi.NULL:
-            lib.free(buf[0])
-    return wkt
-
-
-def write_wkb(geom, asHex=False):
-    """Convert a geometry object into its Well-Known Binary (WKB) or Hexadecimal WKB
-    representation.
-
-    This function takes a geometry object and returns its WKB representation as a binary
-    string, or as a hexadecimal string if `asHex` is set to True. It handles memory
-    allocation for the generated WKB and ensures that memory is properly freed after
-    use.
-
-    Parameters
-    ----------
-    geom : Geometry or SFCGAL.Geometry
-        The geometry object to be converted. If the input is a `Geometry` instance,
-        its internal
-        SFCGAL geometry object is extracted for the WKB conversion.
-
-    asHex : bool, optional
-        If True, the function returns the geometry's WKB as a hexadecimal string.
-        If False (default), the WKB is returned as a binary string.
-    """
-    if isinstance(geom, Geometry):
-        geom = geom._geom
-    try:
-        buf = ffi.new("char**")
-        length = ffi.new("size_t*")
-        if asHex:
-            lib.sfcgal_geometry_as_hexwkb(geom, buf, length)
-        else:
-            lib.sfcgal_geometry_as_wkb(geom, buf, length)
-
-        wkb = ffi.buffer(buf[0], length[0])[:]
-    finally:
-        # we're responsible for free'ing the memory
-        if not buf[0] == ffi.NULL:
-            lib.free(buf[0])
-    return wkb.decode("utf-8") if asHex else wkb
 
 
 class Geometry:
@@ -1131,60 +962,6 @@ class Geometry:
         translated_geom = lib.sfcgal_geometry_translate_3d(self._geom, dx, dy, dz)
         return Geometry.from_sfcgal_geometry(translated_geom)
 
-    @property
-    def wkt(self):
-        """
-        Get the Well-Known Text (WKT) representation of the geometry.
-
-        Returns
-        -------
-        str
-            The WKT representation of the geometry.
-        """
-        return write_wkt(self._geom)
-
-    def wktDecim(self, decim=8) -> str:
-        """
-        Get the WKT representation of the geometry with specified decimal precision.
-
-        Parameters
-        ----------
-        decim : int, optional
-            The number of decimal places to include in the WKT representation
-            (default is 8).
-
-        Returns
-        -------
-        str
-            The WKT representation of the geometry with the specified precision.
-        """
-        return write_wkt(self._geom, decim)
-
-    @property
-    def wkb(self):
-        """
-        Get the Well-Known Binary (WKB) representation of the geometry.
-
-        Returns
-        -------
-        bytes
-            The WKB representation of the geometry.
-        """
-        return write_wkb(self._geom)
-
-    @property
-    def hexwkb(self):
-        """
-        Get the hexadecimal representation of the Well-Known Binary (WKB) of the
-        geometry.
-
-        Returns
-        -------
-        str
-            The hexadecimal WKB representation of the geometry.
-        """
-        return write_wkb(self._geom, True)
-
     def vtk(self, filename: str):
         """
         Export the geometry to a VTK file.
@@ -1208,7 +985,7 @@ class Geometry:
             lib.sfcgal_geometry_delete(self._geom)
 
     def __str__(self):
-        return self.wktDecim()
+        return self.to_wkt(8)
 
     def wrap(self) -> Geometry:
         """Wrap the SFCGAL geometry attribute of the current instance in a new geometry
@@ -1321,6 +1098,174 @@ class Geometry:
         if geojson_data.get("coordinates") is None:
             raise KeyError("There is no 'coordinates' key in the provided data.")
         return cls.from_coordinates(geojson_data["coordinates"])
+
+    @staticmethod
+    def from_wkt(wkt: str) -> Geometry:
+        """Parse a Well-Known Text (WKT) representation into a Geometry object.
+
+        This function takes a WKT string and converts it into a `Geometry` object
+        by utilizing the SFCGAL library's WKT parsing capabilities.
+
+        Parameters
+        ----------
+        wkt : str
+            The Well-Known Text (WKT) string representing the geometry.
+
+        Returns
+        -------
+        Geometry
+            A `Geometry` object parsed from the WKT string.
+
+        """
+        sfcgal_geom = Geometry.sfcgal_geom_from_wkt(wkt)
+        return Geometry.from_sfcgal_geometry(sfcgal_geom)
+
+    @staticmethod
+    def sfcgal_geom_from_wkt(wkt: str):
+        """
+        Internal function to read Well-Known Text (WKT) and return the
+        SFCGAL geometry object.
+
+        This function converts the WKT string into a UTF-8 encoded byte string,
+        and uses the SFCGAL library to create a geometry object from the WKT.
+
+        Parameters
+        ----------
+        wkt : str
+            The Well-Known Text (WKT) string representing the geometry.
+
+        Returns
+        -------
+        _cffi_backend._CDatabase
+            A pointer towards a SFCGAL Point
+
+        """
+        wkt = bytes(wkt, encoding="utf-8")
+        return lib.sfcgal_io_read_wkt(wkt, len(wkt))
+
+    @staticmethod
+    def from_wkb(wkb: Union[bytes, bytearray]) -> Geometry:
+        """
+        Parse a Well-Known Binary (WKB) representation into a Geometry object.
+
+        This function takes a WKB byte string and converts it into a `Geometry` object
+        by utilizing the SFCGAL library's WKB parsing capabilities.
+
+        Parameters
+        ----------
+        wkb : bytes
+            The Well-Known Binary (WKB) byte string representing the geometry.
+
+        Returns
+        -------
+        Geometry
+            A `Geometry` object parsed from the WKB byte string.
+        """
+        sfcgal_geom = Geometry.sfcgal_geom_from_wkb(wkb)
+        return Geometry.from_sfcgal_geometry(sfcgal_geom)
+
+    @staticmethod
+    def sfcgal_geom_from_wkb(wkb: Union[str, bytes, bytearray]):
+        """Internal function to read a Well-Known Binary (WKB) representation
+        and return the SFCGAL geometry object.
+
+        This function accepts a WKB representation in either binary format
+        (bytes or bytearray) or hexadecimal string format,
+        converts it into a UTF-8 encoded byte string, and uses the SFCGAL
+        library to generate the corresponding geometry object.
+
+        Parameters
+        ----------
+        wkb : bytes, bytearray, or str
+            The Well-Known Binary (WKB) data representing the geometry.
+            - If a `bytes` or `bytearray` object is provided, it is automatically
+            converted to a hexadecimal string.
+            - If a `str` is provided, it must already be a hexadecimal string.
+
+        Returns
+        -------
+        _cffi_backend._CDatabase
+            A pointer towards a SFCGAL Point
+
+        """
+        if isinstance(wkb, (bytes, bytearray)):
+            wkb = wkb.hex()
+        elif not isinstance(wkb, str):
+            raise TypeError("WKB must be a hexadecimal str or data binary")
+        wkb = bytes(wkb, encoding="utf-8")
+        return lib.sfcgal_io_read_wkb(wkb, len(wkb))
+
+    def to_wkt(self, decim: int = -1) -> str:
+        """Convert a geometry object into its Well-Known Text (WKT) representation.
+
+        This function takes a geometry object and returns its WKT representation as a
+        string.
+        If the `decim` parameter is provided and is non-negative, the WKT will include
+        a specific number of decimal places.
+
+        Parameters
+        ----------
+        decim : int, optional
+            The number of decimal places to include in the WKT output.
+            If `decim` is negative (default), the WKT is returned without a specific
+            decimal precision.
+
+        Returns
+        -------
+        str
+            The Well-Known Text (WKT) representation of the geometry.
+
+        """
+        wkt = ""
+        try:
+            buf = ffi.new("char**")
+            length = ffi.new("size_t*")
+            if decim >= 0:
+                lib.sfcgal_geometry_as_text_decim(self._geom, decim, buf, length)
+            else:
+                lib.sfcgal_geometry_as_text(self._geom, buf, length)
+            wkt = ffi.string(buf[0], length[0]).decode("utf-8")
+        finally:
+            # we're responsible for free'ing the memory
+            if not buf[0] == ffi.NULL:
+                lib.free(buf[0])
+        return wkt
+
+    def to_wkb(self, as_hex: bool = False) -> str:
+        """Convert a geometry object into its Well-Known Binary (WKB) or Hexadecimal WKB
+        representation.
+
+        This function takes a geometry object and returns its WKB representation as a
+        binary string, or as a hexadecimal string if `as_hex` is set to True. It handles
+        memory allocation for the generated WKB and ensures that memory is properly
+        freed after use.
+
+        Parameters
+        ----------
+        as_hex : bool, optional
+            If True, the function returns the geometry's WKB as a hexadecimal string.
+            If False (default), the WKB is returned as a binary string.
+
+        Returns
+        -------
+        Union[str, bytes]
+            WKB representation of the geometry
+
+        """
+        try:
+            buf = ffi.new("char**")
+            length = ffi.new("size_t*")
+            if as_hex:
+                lib.sfcgal_geometry_as_hexwkb(self._geom, buf, length)
+            else:
+                lib.sfcgal_geometry_as_wkb(self._geom, buf, length)
+
+            wkb = ffi.buffer(buf[0], length[0])[:]
+        finally:
+            # we're responsible for free'ing the memory
+            if not buf[0] == ffi.NULL:
+                lib.free(buf[0])
+        return wkb.decode("utf-8") if as_hex else wkb
 
 
 class Point(Geometry):

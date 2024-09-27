@@ -1,6 +1,6 @@
 import pytest
 
-from pysfcgal.sfcgal import Polygon, PolyhedralSurface, read_wkt
+from pysfcgal.sfcgal import Polygon, PolyhedralSurface
 
 
 @pytest.fixture
@@ -84,7 +84,7 @@ def test_to_solid():
     )
 
     wkt_poly = f"POLYHEDRALSURFACE Z ({coords_str})"
-    poly = read_wkt(wkt_poly)
+    poly = PolyhedralSurface.from_wkt(wkt_poly)
     solid = poly.to_solid()
     expected_wkt = f"SOLID Z (({coords_str}))"
-    assert solid.wktDecim(1) == expected_wkt
+    assert solid.to_wkt(1) == expected_wkt

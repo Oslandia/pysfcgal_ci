@@ -55,7 +55,7 @@ def test_tin(tin, expected_triangles, tin_unclosed, tin_unordered):
 
 
 def test_tin_wkt(tin, tin_coordinates):
-    assert tin.wktDecim(0) == (
+    assert tin.to_wkt(0) == (
         "TIN Z ("
         "((0 0 0,1 0 0,0 1 0,0 0 0)),"
         "((0 0 0,1 0 0,0 0 1,0 0 0)),"
