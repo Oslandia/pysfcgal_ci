@@ -692,7 +692,7 @@ def test_extrude():
     assert p1e.geom_type == "SOLID"
 
 
-def test_vtk():
+def test_vtk(tmp_test_dir):
     """Test vtk output"""
     geom = PolyhedralSurface.from_wkt(
         "POLYHEDRALSURFACE Z ("
@@ -702,9 +702,10 @@ def test_vtk():
         "((0.0 5.0 0.0, 0.0 5.0 5.0, 5.0 5.0 5.0, 5.0 5.0 0.0, 0.0 5.0 0.0)), "
         "((5.0 5.0 0.0, 5.0 5.0 5.0, 5.0 0.0 5.0, 5.0 0.0 0.0, 5.0 5.0 0.0)), "
         "((5.0 0.0 0.0, 5.0 0.0 5.0, 0.0 0.0 5.0, 0.0 0.0 0.0, 5.0 0.0 0.0)))")
-    geom.vtk('/tmp/out.vtk')
+    out_filepath = str(tmp_test_dir / "out.vtk")
+    geom.write_vtk(out_filepath)
     expected_vtk = pathlib.Path(__file__).parent.resolve() / "expected.vtk"
-    assert cmp('/tmp/out.vtk', expected_vtk)
+    assert cmp(out_filepath, expected_vtk)
 
 
 def test_rhr_lhr():

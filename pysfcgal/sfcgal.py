@@ -1022,7 +1022,7 @@ class Geometry:
         )
         return Geometry.from_sfcgal_geometry(geom)
 
-    def vtk(self, filename: str):
+    def write_vtk(self, filename: str) -> None:
         """
         Export the geometry to a VTK file.
 
@@ -1031,11 +1031,60 @@ class Geometry:
         filename : str
             The name of the file to which the geometry will be exported.
 
+        """
+        return lib.sfcgal_geometry_as_vtk_file(self._geom, bytes(filename, 'utf-8'))
+
+    def to_vtk(self) -> str:
+        """
+        Export the geometry to a VTK string, i.e. basically the content of a VTK file.
+
         Returns
         -------
-        None
+        str
+            VTK representation of the geometry
         """
-        return lib.sfcgal_geometry_as_vtk_file(self._geom, bytes(filename, "utf-8"))
+        try:
+            buf = ffi.new("char**")
+            length = ffi.new("size_t*")
+            lib.sfcgal_geometry_as_vtk(self._geom, buf, length)
+            vtk_string = ffi.string(buf[0], length[0]).decode("utf-8")
+        finally:
+            # we're responsible for free'ing the memory
+            if not buf[0] == ffi.NULL:
+                lib.free(buf[0])
+        return vtk_string
+
+    def write_obj(self, filename: str) -> None:
+        """
+        Export the geometry to a OBJ file.
+
+        Parameters
+        ----------
+        filename : str
+            The name of the file to which the geometry will be exported.
+
+        """
+        return lib.sfcgal_geometry_as_obj_file(self._geom, bytes(filename, 'utf-8'))
+
+    def to_obj(self) -> str:
+        """
+        Export the geometry to a OBJ string, i.e. basically the content of a OBJ file.
+
+        Returns
+        -------
+        str
+            OBJ representation of the geometry
+        """
+        try:
+            buf = ffi.new("char**")
+            length = ffi.new("size_t*")
+            lib.sfcgal_geometry_as_obj(self._geom, buf, length)
+            obj_string = ffi.string(buf[0], length[0]).decode("utf-8")
+        finally:
+            # we're responsible for free'ing the memory
+            if not buf[0] == ffi.NULL:
+                lib.free(buf[0])
+        return obj_string
 
     def __del__(self):
         if self._owned:
