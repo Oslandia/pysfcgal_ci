@@ -128,3 +128,28 @@ def test_intersection_polygon_polygon(polygon1, polygon2):
     polygon3 = polygon1.intersection(polygon2)
     assert polygon3.area == 1.0
     # TODO: check coordinates
+
+
+def test_translate_2d(polygon1, ext_ring1):
+    dx = 10.
+    dy = 20.
+    translated_polygon = polygon1.translate_2d(dx, dy)
+    expected_ring_coordinates = [(x + dx, y + dy) for x, y in ext_ring1]
+    assert translated_polygon.to_coordinates() == [expected_ring_coordinates]
+    reverted_polygon = translated_polygon.translate_2d(-dx, -dy)
+    assert polygon1.to_coordinates() == reverted_polygon.to_coordinates()
+
+
+def test_translate_3d(polygon1, ext_ring1):
+    dx = 10.
+    dy = 20.
+    dz = 30.
+    translated_polygon = polygon1.translate_3d(dx, dy, dz)
+    expected_ring_coordinates = [(x + dx, y + dy, dz) for x, y in ext_ring1]
+    assert translated_polygon.to_coordinates() == [expected_ring_coordinates]
+    # Apply a 2D-translation to a 3D geometry makes a 2D geometry
+    reverted_polygon = translated_polygon.translate_2d(-dx, -dy)
+    assert polygon1.to_coordinates() == reverted_polygon.to_coordinates()
+    # Apply a 3D-translation to a 2D geometry makes a 3D geometry
+    retranslated_polygon = reverted_polygon.translate_3d(dx, dy, dz)
+    assert translated_polygon.to_coordinates() == retranslated_polygon.to_coordinates()

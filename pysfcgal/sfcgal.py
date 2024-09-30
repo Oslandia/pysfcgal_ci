@@ -1089,6 +1089,48 @@ class Geometry:
         )
         return Geometry.from_sfcgal_geometry(geom)
 
+    def translate_2d(self, dx: float = 0, dy: float = 0) -> Geometry:
+        """
+        Translate a geometry by a 2D vector, hence producing a 2D-geometry as an output.
+
+        Parameters
+        ----------
+        dx : float, optional
+            x component of the translation vector
+        dy : float, optional
+            y component of the translation vector
+
+        Returns
+        -------
+        Geometry
+            A 2D geometry translated from the current geometry
+        """
+        translated_geom = lib.sfcgal_geometry_translate_2d(self._geom, dx, dy)
+        return Geometry.from_sfcgal_geometry(translated_geom)
+
+    def translate_3d(self, dx: float = 0, dy: float = 0, dz: float = 0) -> Geometry:
+        """
+        Translate a geometry by a 3D vector, hence producing a 3D-geometry as an output.
+
+        If the current geometry is 2D, the starting Z coordinates is assumed to be 0.
+
+        Parameters
+        ----------
+        dx : float, optional
+            x component of the translation vector
+        dy : float, optional
+            y component of the translation vector
+        dz : float, optional
+            z component of the translation vector
+
+        Returns
+        -------
+        Geometry
+            A 3D geometry translated from the current geometry
+        """
+        translated_geom = lib.sfcgal_geometry_translate_3d(self._geom, dx, dy, dz)
+        return Geometry.from_sfcgal_geometry(translated_geom)
+
     @property
     def wkt(self):
         """
