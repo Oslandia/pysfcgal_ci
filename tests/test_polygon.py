@@ -153,3 +153,21 @@ def test_translate_3d(polygon1, ext_ring1):
     # Apply a 3D-translation to a 2D geometry makes a 3D geometry
     retranslated_polygon = reverted_polygon.translate_3d(dx, dy, dz)
     assert translated_polygon.to_coordinates() == retranslated_polygon.to_coordinates()
+
+
+def test_vtk(tmp_test_dir, polygon1):
+    vtk = polygon1.to_vtk()
+    vtk_filepath = tmp_test_dir / "poly.vtk"
+    polygon1.write_vtk(str(vtk_filepath))
+    with open(vtk_filepath) as vtk_fobj:
+        for vtk_str_line, vtk_file_line in zip(vtk.split("\n"), vtk_fobj):
+            assert vtk_str_line + "\n" == vtk_file_line
+
+
+def test_obj(tmp_test_dir, polygon1):
+    obj = polygon1.to_obj()
+    obj_filepath = tmp_test_dir / "poly.obj"
+    polygon1.write_obj(str(obj_filepath))
+    with open(obj_filepath) as obj_fobj:
+        for obj_str_line, obj_file_line in zip(obj.split("\n"), obj_fobj):
+            assert obj_str_line + "\n" == obj_file_line

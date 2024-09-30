@@ -1,4 +1,17 @@
+import shutil
+import tempfile
+from pathlib import Path
+
 import pytest
+
+tests_dir = Path(__file__).parent
+
+
+@pytest.fixture
+def tmp_test_dir():
+    tmp_dir = tempfile.mkdtemp()
+    yield Path(tmp_dir)
+    shutil.rmtree(tmp_dir, ignore_errors=True)
 
 
 @pytest.fixture
