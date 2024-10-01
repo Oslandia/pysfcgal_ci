@@ -10,10 +10,6 @@ http://www.sfcgal.org/
 
 Documentation is automatically generated and deployed from the CI: https://sfcgal.gitlab.io/pysfcgal
 
-## Installation
-
-See the [installation page](https://sfcgal.gitlab.io/pysfcgal/user_guide/build/) in the documentation.
-
 ## How to contribute
 
 You are intersted in PySFCGAL and want to contribute? Please have a look at [the contributing guidelines](CONTRIBUTING.md)!
