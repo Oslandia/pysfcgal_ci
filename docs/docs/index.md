@@ -6,7 +6,7 @@
 
 **Initial work** : This project is a fork of the [project](https://github.com/snorfalorpagus/pysfcgal/) created by [Joshua Arnott](https://github.com/snorfalorpagus).
 
-**Sponsored by** : [OSLANDIA](www.oslandia.com)
+**Sponsored by** : [OSLANDIA](https://www.oslandia.com)
 
 **Version:** 1.5.2
 
