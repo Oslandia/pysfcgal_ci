@@ -1397,7 +1397,7 @@ class Geometry:
         return Geometry.from_sfcgal_geometry(sfcgal_geom)
 
     @staticmethod
-    def sfcgal_geom_from_wkt(wkt: str):
+    def sfcgal_geom_from_wkt(wkt: str) -> ffi.CData:
         """
         Internal function to read Well-Known Text (WKT) and return the
         SFCGAL geometry object.
