@@ -997,7 +997,7 @@ class Geometry:
         geom = lib.sfcgal_geometry_scale_3d(self._geom, fx, fy, fz)
         return Geometry.from_sfcgal_geometry(geom)
 
-    def scale_around_center(self, fx, fy, fz, cx, cy, cz):
+    def scale_around_center(self, fx, fy, fz, cx, cy, cz) -> Geometry:
         """
         Scale a geometry by different factors for each dimension around a center point
 
@@ -1020,6 +1020,162 @@ class Geometry:
         geom = lib.sfcgal_geometry_scale_3d_around_center(
             self._geom, fx, fy, fz, cx, cy, cz
         )
+        return Geometry.from_sfcgal_geometry(geom)
+
+    def rotate(self, angle: float = 0.) -> Geometry:
+        """
+        Rotates a geometry around the origin (0,0,0) by a given angle
+
+        Parameters
+        ----------
+        angle : float, optional
+            Rotation angle in radians
+
+        Returns
+        -------
+        Geometry
+            The rotated geometry
+        """
+        geom = lib.sfcgal_geometry_rotate(self._geom, angle)
+        return Geometry.from_sfcgal_geometry(geom)
+
+    def rotate_around_2d_point(
+        self, angle: float, cx: float, cy: float
+    ) -> Geometry:
+        """
+        Rotates a geometry around a specified point by a given angle
+
+        Parameters
+        ----------
+        angle : float
+            Rotation angle in radians
+        cx : float
+            X-coordinate of the center point
+        cy : float
+            Y-coordinate of the center point
+
+        Returns
+        -------
+        Geometry
+            The rotated geometry
+        """
+        geom = lib.sfcgal_geometry_rotate_2d(self._geom, angle, cx, cy)
+        return Geometry.from_sfcgal_geometry(geom)
+
+    def rotate_around_3d_axis(
+        self, angle: float, ax: float, ay: float, az: float
+    ) -> Geometry:
+        """
+        Rotates a 3D geometry around a specified axis by a given angle
+
+        Parameters
+        ----------
+        angle : float
+            Rotation angle in radians
+        ax : float
+            X-coordinate of the axis vector
+        ay : float
+            Y-coordinate of the axis vector
+        az : float
+            Z-coordinate of the axis vector
+
+        Returns
+        -------
+        Geometry
+            The rotated geometry
+        """
+        geom = lib.sfcgal_geometry_rotate_3d(self._geom, angle, ax, ay, az)
+        return Geometry.from_sfcgal_geometry(geom)
+
+    def rotate_3d_around_center(
+        self,
+        angle: float,
+        ax: float,
+        ay: float,
+        az: float,
+        cx: float,
+        cy: float,
+        cz: float,
+    ) -> Geometry:
+        """
+        Rotates a 3D geometry around a specified axis and center point by a given
+
+        Parameters
+        ----------
+        angle : float
+            Rotation angle in radians
+        ax : float
+            X-coordinate of the axis vector
+        ay : float
+            Y-coordinate of the axis vector
+        az : float
+            Z-coordinate of the axis vector
+        cx : float
+            X-coordinate of the center point
+        cy : float
+            Y-coordinate of the center point
+        cz : float
+            Z-coordinate of the center point
+
+        Returns
+        -------
+        Geometry
+            The rotated geometry
+        """
+        geom = lib.sfcgal_geometry_rotate_3d_around_center(
+            self._geom, angle, ax, ay, az, cx, cy, cz
+        )
+        return Geometry.from_sfcgal_geometry(geom)
+
+    def rotate_x(self, angle: float = 0.) -> Geometry:
+        """
+        Rotates a geometry around the X axis by a given angle
+
+        Parameters
+        ----------
+        angle : float, optional
+            Rotation angle in radians
+
+        Returns
+        -------
+        Geometry
+            The rotated geometry
+        """
+        geom = lib.sfcgal_geometry_rotate_x(self._geom, angle)
+        return Geometry.from_sfcgal_geometry(geom)
+
+    def rotate_y(self, angle: float = 0.) -> Geometry:
+        """
+        Rotates a geometry around the Y axis by a given angle
+
+        Parameters
+        ----------
+        angle : float, optional
+            Rotation angle in radians
+
+        Returns
+        -------
+        Geometry
+            The rotated geometry
+        """
+        geom = lib.sfcgal_geometry_rotate_y(self._geom, angle)
+        return Geometry.from_sfcgal_geometry(geom)
+
+    def rotate_z(self, angle: float = 0.) -> Geometry:
+        """
+        Rotates a geometry around the Z axis by a given angle
+
+        Parameters
+        ----------
+        angle : float, optional
+            Rotation angle in radians
+
+        Returns
+        -------
+        Geometry
+            The rotated geometry
+        """
+        geom = lib.sfcgal_geometry_rotate_z(self._geom, angle)
         return Geometry.from_sfcgal_geometry(geom)
 
     def write_vtk(self, filename: str) -> None:
