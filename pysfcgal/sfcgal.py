@@ -1441,7 +1441,7 @@ class Geometry:
         return Geometry.from_sfcgal_geometry(sfcgal_geom)
 
     @staticmethod
-    def sfcgal_geom_from_wkb(wkb: Union[str, bytes, bytearray]):
+    def sfcgal_geom_from_wkb(wkb: Union[str, bytes, bytearray]) -> ffi.CData:
         """Internal function to read a Well-Known Binary (WKB) representation
         and return the SFCGAL geometry object.
 
