@@ -962,6 +962,66 @@ class Geometry:
         translated_geom = lib.sfcgal_geometry_translate_3d(self._geom, dx, dy, dz)
         return Geometry.from_sfcgal_geometry(translated_geom)
 
+    def scale_uniform(self, factor: float = 1.) -> Geometry:
+        """Scale a geometry by a given factor
+
+        Parameters
+        ----------
+        factor : float, optional
+            Scaling factor, 1. by default (identity scale)
+
+        Returns
+        -------
+        Geometry
+            Scaled geometry
+        """
+        return self.scale(factor, factor, factor)
+
+    def scale(self, fx: float = 1., fy: float = 1., fz: float = 1.) -> Geometry:
+        """Scale a geometry by different factors for each dimension
+
+        Parameters
+        ----------
+        fx : float, optional
+            Scaling factor for x dimension, 1. by default (identity scale)
+        fy : float, optional
+            Scaling factor for y dimension, 1. by default (identity scale)
+        fz : float, optional
+            Scaling factor for z dimension, 1. by default (identity scale)
+
+        Returns
+        -------
+        Geometry
+            Scaled geometry
+        """
+        geom = lib.sfcgal_geometry_scale_3d(self._geom, fx, fy, fz)
+        return Geometry.from_sfcgal_geometry(geom)
+
+    def scale_around_center(self, fx, fy, fz, cx, cy, cz):
+        """
+        Scale a geometry by different factors for each dimension around a center point
+
+        Parameters
+        ----------
+        fx : float
+            Scaling factor for x dimension
+        fy : float
+            Scaling factor for y dimension
+        fz : float
+            Scaling factor for z dimension
+        cx : float
+            X-coordinate of the center point
+        cy : float
+            Y-coordinate of the center point
+        cz : float
+            Z-coordinate of the center point
+
+        """
+        geom = lib.sfcgal_geometry_scale_3d_around_center(
+            self._geom, fx, fy, fz, cx, cy, cz
+        )
+        return Geometry.from_sfcgal_geometry(geom)
+
     def vtk(self, filename: str):
         """
         Export the geometry to a VTK file.
