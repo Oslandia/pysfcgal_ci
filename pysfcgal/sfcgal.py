@@ -1416,8 +1416,8 @@ class Geometry:
             A pointer towards a SFCGAL Point
 
         """
-        wkt = bytes(wkt, encoding="utf-8")
-        return lib.sfcgal_io_read_wkt(wkt, len(wkt))
+        wkt_bytes = bytes(wkt, encoding="utf-8")
+        return lib.sfcgal_io_read_wkt(wkt_bytes, len(wkt_bytes))
 
     @staticmethod
     def from_wkb(wkb: Union[bytes, bytearray]) -> Optional[Geometry]:
