@@ -674,6 +674,24 @@ class Geometry:
         )
         return Geometry.from_sfcgal_geometry(geom)
 
+    @cond_icontract(
+        lambda self: (
+            self.is_valid()
+            and self.geom_type in ("MultiPolygon", "Polygon", "Triangle")
+        ),
+        "require",
+    )
+    def straight_skeleton_partition(self):
+        """Returns the straight skeleton partition for the given Polygon
+
+        Returns
+        -------
+        Geometry
+            Partition of the Polygon straight skeleton
+        """
+        geom = lib.sfcgal_geometry_straight_skeleton_partition(self._geom, True)
+        return Geometry.from_sfcgal_geometry(geom)
+
     @cond_icontract(lambda self: self.is_valid(), "require")
     def approximate_medial_axis(self) -> Optional[Geometry]:
         """
