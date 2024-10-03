@@ -22,3 +22,13 @@ Make sure your code *roughly* follows [PEP-8](https://www.python.org/dev/peps/pe
 We use the linter [commitizen](https://github.com/commitizen-tools/commitizen) with the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) configuration (the default one).
 
 The commit message writing process can be guided by using `cz commit` instead of `git commit`.
+
+## Run unit tests
+
+In order to run unit tests, please consider installing the dependencies that are referenced in the requirement folder:
+
+```bash
+pip install -r requirements/unit_tests.txt
+```
+
+In particular, we use `icontract` in this context (this dependency is set as an extra dependency, as it might be unpackaged on some environments). The unit tests are run through `pytest`. This testing mode is actually used in the CI.

@@ -1,3 +1,4 @@
+import icontract
 import pytest
 
 from pysfcgal.sfcgal import BufferType, LineString, Point
@@ -15,7 +16,7 @@ def test_buffer_3d_point():
 
 @pytest.mark.parametrize("radius, segments", [(0, 0), (0, 16), (10, 0)])
 def test_buffer_3d_point_fail(radius, segments):
-    with pytest.raises(AssertionError):
+    with pytest.raises(icontract.ViolationError):
         point = Point(0, 0, 0)
         _ = point.buffer_3d(radius, segments)
 
@@ -53,6 +54,6 @@ def test_buffer_3d_linestring():
     ]
 )
 def test_buffer_3d_linestring_fail(radius, segments, buffer_type):
-    with pytest.raises(AssertionError):
+    with pytest.raises(icontract.ViolationError):
         linestring = LineString(((0, 0), (1, 1)))
         _ = linestring.buffer_3d(radius, segments, buffer_type)
