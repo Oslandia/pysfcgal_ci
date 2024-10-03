@@ -439,7 +439,6 @@ class Geometry:
 
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract(lambda self: self.is_valid(), "require")
     def force_lhr(self) -> Geometry:
         """
         Force the geometry to have a left-hand rule (LHR) orientation.
@@ -452,7 +451,6 @@ class Geometry:
         geom = lib.sfcgal_geometry_force_lhr(self._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract(lambda self: self.is_valid(), "require")
     def force_rhr(self) -> Geometry:
         """
         Force the geometry to have a right-hand rule (RHR) orientation.
