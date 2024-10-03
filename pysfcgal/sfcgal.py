@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import functools
 import platform
+from enum import Enum
 from typing import Union
 
 from ._sfcgal import ffi, lib
@@ -37,6 +38,12 @@ def cond_icontract(lambda_func, contract_name):
 
 # this must be called before anything else
 lib.sfcgal_init()
+
+
+class BufferType(Enum):
+    SFCGAL_BUFFER3D_ROUND = 0
+    SFCGAL_BUFFER3D_CYLSPHERE = 1
+    SFCGAL_BUFFER3D_FLAT = 2
 
 
 class DimensionError(Exception):
@@ -1618,6 +1625,32 @@ class Point(Geometry):
         else:
             raise DimensionError("This point has no m coordinate.")
 
+    @cond_icontract(
+        lambda self, radius, segments: (
+            self.is_valid() and radius > 0 and segments > 2
+        ),
+        "require",
+    )
+    def buffer_3d(self, radius: float, segments: int) -> Geometry:
+        """
+        Computes a 3D buffer around a Point
+
+        Parameters
+        ----------
+        radius : float
+            The buffer radius
+        segments : int
+            The number of segmetns to use for approximating curved surfaces
+
+        Returns
+        -------
+        Geometry
+            The buffered geometry
+
+        """
+        geom = lib.sfcgal_geometry_buffer3d(self._geom, radius, segments, 0)
+        return Geometry.from_sfcgal_geometry(geom)
+
     def to_coordinates(self) -> tuple:
         """Generates the coordinates of the Point.
 
@@ -1819,6 +1852,43 @@ class LineString(Geometry):
             True if the edge exists in the LineString, False otherwise.
         """
         return is_segment_in_coordsequence(self.to_coordinates(), point_a, point_b)
+
+    @cond_icontract(
+        lambda self, radius, segments, buffer_type: (
+            self.is_valid() and radius > 0 and segments > 2 and (
+                isinstance(buffer_type, BufferType)
+                or (isinstance(buffer_type, int) and buffer_type in (0, 1, 2))
+            )
+        ),
+        "require",
+    )
+    def buffer_3d(
+        self, radius: float, segments: int, buffer_type: Union[BufferType, int]
+    ) -> Geometry:
+        """
+        Computes a 3D buffer around a LineString
+
+        Parameters
+        ----------
+        radius : float
+            The buffer radius
+        segments : int
+            The number of segmetns to use for approximating curved surfaces
+        buffer_type : BufferType|int
+            Either 0 (SFCGAL_BUFFER3D_ROUND, Minkowski sum with a sphere),
+            1 (SFCGAL_BUFFER3D_CYLSPHERE: Union of cylinders and spheres) or
+            2 (SFCGAL_BUFFER3D_FLAT: Construction of a disk on the bisector plane)
+
+        Returns
+        -------
+        Geometry
+            The buffered geometry
+
+        """
+        if isinstance(buffer_type, BufferType):
+            buffer_type = buffer_type.value
+        geom = lib.sfcgal_geometry_buffer3d(self._geom, radius, segments, buffer_type)
+        return Geometry.from_sfcgal_geometry(geom)
 
     def to_coordinates(self) -> list:
         """Generates the coordinates of the LineString.
