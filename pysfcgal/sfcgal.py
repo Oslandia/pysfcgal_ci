@@ -21,14 +21,16 @@ except ImportError:
     has_icontract = False
 
 
-def cond_icontract(contract_name, *args, **kwargs):
-    def cond_decorateur(func):
-        if has_icontract:
-            decorator = getattr(icontract, contract_name)
-            func = decorator(*args, **kwargs)(func)
-        return func
-
-    return cond_decorateur
+def cond_icontract(lambda_func, contract_name):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            icontract_decorator = getattr(icontract, contract_name)
+            decorated_func = icontract_decorator(lambda_func)(func)
+            return decorated_func(*args, **kwargs)
+        if not has_icontract:
+            return func
+        return wrapper
+    return decorator
 
 
 # this must be called before anything else
@@ -73,8 +75,7 @@ class Geometry:
 
     _owned = True
 
-    @cond_icontract("require", lambda self, other: self.is_valid())
-    @cond_icontract("require", lambda self, other: other.is_valid())
+    @cond_icontract(lambda self, other: self.is_valid() and other.is_valid(), "require")
     def distance(self, other: Geometry) -> float:
         """
         Compute the 2D Euclidean distance between this geometry and another geometry.
@@ -91,8 +92,7 @@ class Geometry:
         """
         return lib.sfcgal_geometry_distance(self._geom, other._geom)
 
-    @cond_icontract("require", lambda self, other: self.is_valid())
-    @cond_icontract("require", lambda self, other: other.is_valid())
+    @cond_icontract(lambda self, other: self.is_valid() and other.is_valid(), "require")
     def distance_3d(self, other: Geometry) -> float:
         """
         Compute the 3D Euclidean distance between this geometry and another geometry.
@@ -110,7 +110,7 @@ class Geometry:
         return lib.sfcgal_geometry_distance_3d(self._geom, other._geom)
 
     @property
-    @cond_icontract("require", lambda self: self.is_valid())
+    @cond_icontract(lambda self: self.is_valid(), "require")
     def area(self) -> float:
         """
         Return the area of the geometry.
@@ -173,7 +173,7 @@ class Geometry:
         """
         return geom_types_r[lib.sfcgal_geometry_type_id(self._geom)]
 
-    @cond_icontract("require", lambda self: self.is_valid())
+    @cond_icontract(lambda self: self.is_valid(), "require")
     def area_3d(self) -> float:
         """
         Return the 3D area of the geometry.
@@ -185,7 +185,7 @@ class Geometry:
         """
         return lib.sfcgal_geometry_area_3d(self._geom)
 
-    @cond_icontract("require", lambda self: self.is_valid())
+    @cond_icontract(lambda self: self.is_valid(), "require")
     def volume(self) -> float:
         """
         Return the volume of the geometry.
@@ -197,7 +197,7 @@ class Geometry:
         """
         return lib.sfcgal_geometry_volume(self._geom)
 
-    @cond_icontract("require", lambda self: self.is_valid())
+    @cond_icontract(lambda self: self.is_valid(), "require")
     def convexhull(self) -> Geometry:
         """
         Compute the 2D convex hull of the geometry.
@@ -210,7 +210,7 @@ class Geometry:
         geom = lib.sfcgal_geometry_convexhull(self._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract("require", lambda self: self.is_valid())
+    @cond_icontract(lambda self: self.is_valid(), "require")
     def convexhull_3d(self) -> Geometry:
         """
         Compute the 3D convex hull of the geometry.
@@ -223,8 +223,7 @@ class Geometry:
         geom = lib.sfcgal_geometry_convexhull_3d(self._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract("require", lambda self, other: self.is_valid())
-    @cond_icontract("require", lambda self, other: other.is_valid())
+    @cond_icontract(lambda self, other: self.is_valid() and other.is_valid(), "require")
     def difference(self, other: Geometry) -> Geometry:
         """
         Compute the difference between this geometry and another in 2D.
@@ -242,8 +241,7 @@ class Geometry:
         geom = lib.sfcgal_geometry_difference(self._geom, other._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract("require", lambda self, other: self.is_valid())
-    @cond_icontract("require", lambda self, other: other.is_valid())
+    @cond_icontract(lambda self, other: self.is_valid() and other.is_valid(), "require")
     def difference_3d(self, other: Geometry) -> Geometry:
         """
         Compute the difference between this geometry and another in 3D.
@@ -261,8 +259,7 @@ class Geometry:
         geom = lib.sfcgal_geometry_difference_3d(self._geom, other._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract("require", lambda self, other: self.is_valid())
-    @cond_icontract("require", lambda self, other: other.is_valid())
+    @cond_icontract(lambda self, other: self.is_valid(), "require")
     def intersects(self, other: Geometry) -> bool:
         """
         Check if this geometry intersects with another geometry in 2D.
@@ -279,8 +276,7 @@ class Geometry:
         """
         return lib.sfcgal_geometry_intersects(self._geom, other._geom) == 1
 
-    @cond_icontract("require", lambda self, other: self.is_valid())
-    @cond_icontract("require", lambda self, other: other.is_valid())
+    @cond_icontract(lambda self, other: self.is_valid() and other.is_valid(), "require")
     def intersects_3d(self, other: Geometry) -> bool:
         """
         Check if this geometry intersects with another geometry in 3D.
@@ -297,8 +293,7 @@ class Geometry:
         """
         return lib.sfcgal_geometry_intersects_3d(self._geom, other._geom) == 1
 
-    @cond_icontract("require", lambda self, other: self.is_valid())
-    @cond_icontract("require", lambda self, other: other.is_valid())
+    @cond_icontract(lambda self, other: self.is_valid() and other.is_valid(), "require")
     def intersection(self, other: Geometry) -> Geometry:
         """
         Compute the intersection of this geometry and another in 2D.
@@ -316,8 +311,7 @@ class Geometry:
         geom = lib.sfcgal_geometry_intersection(self._geom, other._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract("require", lambda self, other: self.is_valid())
-    @cond_icontract("require", lambda self, other: other.is_valid())
+    @cond_icontract(lambda self, other: self.is_valid() and other.is_valid(), "require")
     def intersection_3d(self, other: Geometry) -> Geometry:
         """
         Compute the intersection of this geometry and another in 3D.
@@ -335,8 +329,7 @@ class Geometry:
         geom = lib.sfcgal_geometry_intersection_3d(self._geom, other._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract("require", lambda self, other: self.is_valid())
-    @cond_icontract("require", lambda self, other: other.is_valid())
+    @cond_icontract(lambda self, other: self.is_valid() and other.is_valid(), "require")
     def union(self, other: Geometry) -> Geometry:
         """
         Compute the union of this geometry and another in 2D.
@@ -354,8 +347,7 @@ class Geometry:
         geom = lib.sfcgal_geometry_union(self._geom, other._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract("require", lambda self, other: self.is_valid())
-    @cond_icontract("require", lambda self, other: other.is_valid())
+    @cond_icontract(lambda self, other: self.is_valid() and other.is_valid(), "require")
     def union_3d(self, other: Geometry) -> Geometry:
         """
         Compute the union of this geometry and another in 3D.
@@ -373,8 +365,7 @@ class Geometry:
         geom = lib.sfcgal_geometry_union_3d(self._geom, other._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract("require", lambda self, other: self.is_valid())
-    @cond_icontract("require", lambda self, other: other.is_valid())
+    @cond_icontract(lambda self, other: self.is_valid() and other.is_valid(), "require")
     def covers(self, other: Geometry) -> bool:
         """
         Check if this geometry covers another geometry in 2D.
@@ -391,8 +382,7 @@ class Geometry:
         """
         return lib.sfcgal_geometry_covers(self._geom, other._geom) == 1
 
-    @cond_icontract("require", lambda self, other: self.is_valid())
-    @cond_icontract("require", lambda self, other: other.is_valid())
+    @cond_icontract(lambda self, other: self.is_valid() and other.is_valid(), "require")
     def covers_3d(self, other: Geometry) -> bool:
         """
         Check if this geometry covers another geometry in 3D.
@@ -409,7 +399,7 @@ class Geometry:
         """
         return lib.sfcgal_geometry_covers_3d(self._geom, other._geom) == 1
 
-    @cond_icontract("require", lambda self: self.is_valid())
+    @cond_icontract(lambda self: self.is_valid(), "require")
     def triangulate_2dz(self) -> Geometry:
         """
         Compute the 2D triangulation of the geometry with Z values.
@@ -422,7 +412,7 @@ class Geometry:
         geom = lib.sfcgal_geometry_triangulate_2dz(self._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract("require", lambda self: self.is_valid())
+    @cond_icontract(lambda self: self.is_valid(), "require")
     def tessellate(self) -> Geometry:
         """
         Perform tessellation on the geometry.
@@ -437,7 +427,7 @@ class Geometry:
 
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract("require", lambda self: self.is_valid())
+    @cond_icontract(lambda self: self.is_valid(), "require")
     def force_lhr(self) -> Geometry:
         """
         Force the geometry to have a left-hand rule (LHR) orientation.
@@ -450,7 +440,7 @@ class Geometry:
         geom = lib.sfcgal_geometry_force_lhr(self._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract("require", lambda self: self.is_valid())
+    @cond_icontract(lambda self: self.is_valid(), "require")
     def force_rhr(self) -> Geometry:
         """
         Force the geometry to have a right-hand rule (RHR) orientation.
@@ -502,7 +492,7 @@ class Geometry:
         """
         return lib.sfcgal_geometry_is_planar(self._geom) == 1
 
-    @cond_icontract("require", lambda self: self.is_valid())
+    @cond_icontract(lambda self: self.is_valid(), "require")
     def orientation(self) -> int:
         """
         Get the orientation of the geometry.
@@ -514,7 +504,7 @@ class Geometry:
         """
         return lib.sfcgal_geometry_orientation(self._geom)
 
-    @cond_icontract("require", lambda self: self.is_valid())
+    @cond_icontract(lambda self, r: self.is_valid(), "require")
     def round(self, r) -> float:
         """
         Round the geometry to a specified precision.
@@ -532,8 +522,7 @@ class Geometry:
         geom = lib.sfcgal_geometry_round(self._geom, r)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract("require", lambda self, other: self.is_valid())
-    @cond_icontract("require", lambda self, other: other.is_valid())
+    @cond_icontract(lambda self, other: self.is_valid() and other.is_valid(), "require")
     def minkowski_sum(self, other: Geometry) -> Geometry:
         """
         Calculate the Minkowski sum of this geometry and another geometry.
@@ -551,7 +540,7 @@ class Geometry:
         geom = lib.sfcgal_geometry_minkowski_sum(self._geom, other._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract("require", lambda self: self.is_valid())
+    @cond_icontract(lambda self, radius: self.is_valid(), "require")
     def offset_polygon(self, radius: float) -> Geometry:
         """
         Create an offset polygon from the geometry.
@@ -569,7 +558,9 @@ class Geometry:
         geom = lib.sfcgal_geometry_offset_polygon(self._geom, radius)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract("require", lambda self: self.is_valid())
+    @cond_icontract(
+        lambda self, extrude_x, extrude_y, extrude_z: self.is_valid(), "require"
+    )
     def extrude(self, extrude_x: float, extrude_y: float, extrude_z: float) -> Geometry:
         """
         Extrude the geometry in the specified direction.
@@ -591,7 +582,7 @@ class Geometry:
         geom = lib.sfcgal_geometry_extrude(self._geom, extrude_x, extrude_y, extrude_z)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract("require", lambda self: self.is_valid())
+    @cond_icontract(lambda self: self.is_valid(), "require")
     def straight_skeleton(self) -> Geometry:
         """
         Compute the straight skeleton of the geometry.
@@ -604,7 +595,7 @@ class Geometry:
         geom = lib.sfcgal_geometry_straight_skeleton(self._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract("require", lambda self: self.is_valid())
+    @cond_icontract(lambda self: self.is_valid(), "require")
     def straight_skeleton_distance_in_m(self) -> Geometry:
         """
         Compute the straight skeleton distance in meters.
@@ -617,9 +608,12 @@ class Geometry:
         geom = lib.sfcgal_geometry_straight_skeleton_distance_in_m(self._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract("require", lambda self, height: self.is_valid())
-    @cond_icontract("require", lambda self, height: self.geom_type == "Polygon")
-    @cond_icontract("require", lambda self, height: height != 0)
+    @cond_icontract(
+        lambda self, height: (
+            self.is_valid() and self.geom_type == "Polygon" and height != 0
+        ),
+        "require",
+    )
     def extrude_straight_skeleton(self, height: float) -> Geometry:
         """
         Extrude the geometry along its straight skeleton.
@@ -638,15 +632,11 @@ class Geometry:
         return Geometry.from_sfcgal_geometry(geom)
 
     @cond_icontract(
-        "require", lambda self, building_height, roof_height: self.is_valid()
-    )  # noqa: E501
-    @cond_icontract(
+        lambda self, building_height, roof_height: (
+            self.is_valid() and self.geom_type == "Polygon" and roof_height != 0
+        ),
         "require",
-        lambda self, building_height, roof_height: self.geom_type == "Polygon",
-    )  # noqa: E501
-    @cond_icontract(
-        "require", lambda self, building_height, roof_height: roof_height != 0
-    )  # noqa: E501
+    )
     def extrude_polygon_straight_skeleton(
         self, building_height: float, roof_height: float
     ) -> Geometry:
@@ -671,7 +661,7 @@ class Geometry:
         )
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract("require", lambda self: self.is_valid())
+    @cond_icontract(lambda self: self.is_valid(), "require")
     def approximate_medial_axis(self) -> Geometry:
         """
         Compute the approximate medial axis of the geometry.
@@ -684,10 +674,13 @@ class Geometry:
         geom = lib.sfcgal_geometry_approximate_medial_axis(self._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract("require", lambda self, start, end: self.is_valid())
-    @cond_icontract("require", lambda self, start, end: -1.0 <= start <= 1.0)
-    @cond_icontract("require", lambda self, start, end: -1.0 <= end <= 1.0)
-    @cond_icontract("ensure", lambda result: result.is_valid())
+    @cond_icontract(
+        lambda self, start, end: (
+            self.is_valid() and -1. <= start <= 1. and -1. <= end <= 1.
+        ),
+        "require",
+    )
+    @cond_icontract(lambda result: result.is_valid(), "ensure")
     def line_sub_string(self, start: float, end: float) -> Geometry:
         """
         Extract a substring from the geometry represented as a line segment.
@@ -708,9 +701,11 @@ class Geometry:
         return Geometry.from_sfcgal_geometry(geom)
 
     @cond_icontract(
-        "require", lambda self, alpha=1.0, allow_holes=False: self.is_valid()
-    )  # noqa: E501
-    @cond_icontract("require", lambda self, alpha=1.0, allow_holes=False: alpha >= 0.0)
+        lambda self, alpha=1.0, allow_holes=False: (
+            self.is_valid() and alpha >= 0
+        ),
+        "require",
+    )
     def alpha_shapes(self, alpha: float = 1.0, allow_holes: bool = False) -> Geometry:
         """
         Compute the alpha shapes of the geometry.
@@ -736,11 +731,11 @@ class Geometry:
         return Geometry.from_sfcgal_geometry(geom)
 
     @cond_icontract(
-        "require", lambda self, allow_holes=False, nb_components=1: self.is_valid()
-    )  # noqa: E501
-    @cond_icontract(
-        "require", lambda self, allow_holes=False, nb_components=1: nb_components >= 0
-    )  # noqa: E501
+        lambda self, allow_holes=False, nb_components=1: (
+            self.is_valid() and nb_components >= 0
+        ),
+        "require",
+    )
     def optimal_alpha_shapes(
         self, allow_holes: bool = False, nb_components: int = 1
     ) -> Geometry:
@@ -769,7 +764,7 @@ class Geometry:
         )
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract("require", lambda self, allow_holes, nb_components: self.is_valid())
+    @cond_icontract(lambda self, allow_holes, nb_components: self.is_valid(), "require")
     def y_monotone_partition_2(
         self, allow_holes: bool = False, nb_components: int = 1
     ) -> Geometry:
@@ -791,7 +786,7 @@ class Geometry:
         geom = lib.sfcgal_y_monotone_partition_2(self._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract("require", lambda self, allow_holes, nb_components: self.is_valid())
+    @cond_icontract(lambda self, allow_holes, nb_components: self.is_valid(), "require")
     def approx_convex_partition_2(
         self, allow_holes: bool = False, nb_components: int = 1
     ) -> Geometry:
@@ -813,7 +808,7 @@ class Geometry:
         geom = lib.sfcgal_approx_convex_partition_2(self._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract("require", lambda self, allow_holes, nb_components: self.is_valid())
+    @cond_icontract(lambda self, allow_holes, nb_components: self.is_valid(), "require")
     def greene_approx_convex_partition_2(
         self, allow_holes: bool = False, nb_components: int = 1
     ) -> Geometry:
@@ -835,7 +830,7 @@ class Geometry:
         geom = lib.sfcgal_greene_approx_convex_partition_2(self._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract("require", lambda self, allow_holes, nb_components: self.is_valid())
+    @cond_icontract(lambda self, allow_holes, nb_components: self.is_valid(), "require")
     def optimal_convex_partition_2(
         self, allow_holes: bool = False, nb_components: int = 1
     ) -> Geometry:
@@ -857,11 +852,16 @@ class Geometry:
         geom = lib.sfcgal_optimal_convex_partition_2(self._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract("require", lambda self, other: self.is_valid())
-    @cond_icontract("require", lambda self, other: self.geom_type == "Polygon")
-    @cond_icontract("require", lambda self, other: other.is_valid())
-    @cond_icontract("require", lambda self, other: other.geom_type == "Point")
-    @cond_icontract("require", lambda self, other: self.intersects(other))
+    @cond_icontract(
+        lambda self, other: (
+            self.is_valid()
+            and self.geom_type == "Polygon"
+            and other.is_valid()
+            and other.geom_type == "Point"
+            and self.intersects(other)
+        ),
+        "require",
+    )
     def point_visibility(self, other: Geometry) -> Geometry:
         """
         Compute the visibility of a point from a polygon geometry.
@@ -880,23 +880,17 @@ class Geometry:
         geom = lib.sfcgal_geometry_visibility_point(self._geom, other._geom)
         return Geometry.from_sfcgal_geometry(geom)
 
-    @cond_icontract("require", lambda self, other_a, other_b: self.is_valid())
     @cond_icontract(
-        "require", lambda self, other_a, other_b: self.geom_type == "Polygon"
-    )  # noqa: E501
-    @cond_icontract("require", lambda self, other_a, other_b: other_a.is_valid())
-    @cond_icontract(
-        "require", lambda self, other_a, other_b: other_a.geom_type == "Point"
-    )  # noqa: E501
-    @cond_icontract("require", lambda self, other_a, other_b: other_b.is_valid())
-    @cond_icontract(
-        "require", lambda self, other_a, other_b: other_b.geom_type == "Point"
-    )  # noqa: E501
-    @cond_icontract(
+        lambda self, other_a, other_b: (
+            self.is_valid()
+            and self.geom_type == "Polygon"
+            and other_a.is_valid()
+            and other_a.geom_type == "Point"
+            and other_b.is_valid()
+            and other_b.geom_type == "Point"
+            and self.has_exterior_edge(other_a, other_b)
+        ),
         "require",
-        lambda self, other_a, other_b: self.has_exterior_edge(
-            other_a, other_b
-        ),  # noqa: E501
     )
     def segment_visibility(self, other_a: Geometry, other_b: Geometry) -> Geometry:
         """
@@ -2808,7 +2802,7 @@ class PolyhedralSurface(GeometryCollectionBase):
         """
         return self[:] == other[:]
 
-    @cond_icontract("require", lambda self: self.is_valid())
+    @cond_icontract(lambda self: self.is_valid(), "require")
     def to_solid(self) -> Solid:
         """Convert the polyhedralsurface into a solid.
 
