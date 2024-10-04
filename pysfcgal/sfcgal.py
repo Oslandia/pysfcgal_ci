@@ -1008,7 +1008,9 @@ class Geometry:
         geom = lib.sfcgal_geometry_scale_3d(self._geom, fx, fy, fz)
         return Geometry.from_sfcgal_geometry(geom)
 
-    def scale_around_center(self, fx, fy, fz, cx, cy, cz) -> Optional[Geometry]:
+    def scale_around_center(
+            self, fx: float, fy: float, fz: float, cx: float, cy: float, cz: float
+    ) -> Optional[Geometry]:
         """
         Scale a geometry by different factors for each dimension around a center point
 
