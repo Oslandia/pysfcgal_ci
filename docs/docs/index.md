@@ -1,6 +1,6 @@
 # PySFCGAL - Documentation
 
-![](assets/img/sfcgal.png)
+![SFCGAL logo](assets/img/sfcgal.png)
 
 **Description:** An official wrapper around the SFCGAL library for Python in the style of Shapely.
 
