@@ -1,5 +1,7 @@
 # PySFCGAL - Documentation
 
+![SFCGAL logo](assets/img/sfcgal.png)
+
 **Description:** An official wrapper around the SFCGAL library for Python in the style of Shapely.
 
 **Author and contributors:** Loïc Bartoletti,Raphaël Delhome, Jean Felder, Florent Fougères
