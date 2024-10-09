@@ -166,13 +166,15 @@ deploy:pypi:
 build:documentation:
   stage: 📦 build
   image: ${PYTHON_DOCKER_IMAGE}
-  only:
-    refs:
-      - merge_requests
-      - master
-    changes:
-      - "pysfcgal/*.py"
-      - ".gitlab-ci.yml"
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'
+      when: always
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      changes:
+        - "pysfcgal/*.py"
+        - ".gitlab-ci.yml"
+      when: on_success
+    - when: never
   before_script:
     - python -m pip install -U pip
     - python -m pip install -U -r requirements/documentation.txt
