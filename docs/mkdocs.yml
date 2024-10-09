@@ -1,16 +1,20 @@
 site_name: PySFCGAL - Documentation
-
-nav:
-  - Home: index.md
-  - User guide:
-        - Installation: user_guide/build.md
-  - API Reference:
-        - API: api_reference/api.md
+repo_name: "pysfcgal"
+repo_url: "https://gitlab.com/sfcgal/pysfcgal/"
 
 theme:
   name: material
+  features:
+    - navigation.instant
+    - navigation.top
+    - navigation.tabs
+    - navigation.hide
   logo: assets/img/sfcgal.png
   favicon: assets/img/sfcgal.png
+  repo_icon: "gitlab"
+  palette:
+     primary: custom
+     accent: custom
 
 
 markdown_extensions:
@@ -25,3 +29,13 @@ plugins:
       python:
         options:
           docstring_style: numpy
+
+extra_css:
+  - stylesheets/extra.css
+
+nav:
+  - Home: index.md
+  - User guide:
+        - Installation: user_guide/build.md
+  - API Reference:
+        - API: api_reference/api.md
