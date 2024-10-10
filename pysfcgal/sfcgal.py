@@ -3134,6 +3134,33 @@ class Solid(GeometryCollectionBase):
         return solid
 
 
+class MultiSolid(GeometryCollectionBase):
+    def __init__(self, coords=None):
+        self._geom = MultiSolid.sfcgal_geom_from_coordinates(coords)
+
+    @staticmethod
+    def sfcgal_geom_from_coordinates(coordinates: list) -> ffi.CData:
+        """Instantiates a SFCGAL MultiSolid starting from a list of coordinates.
+
+        Parameters
+        ----------
+        coordinates: list
+            MultiSolid coordinates.
+
+        Returns
+        -------
+        _cffi_backend._CDatabase
+            A pointer towards a SFCGAL MultiPolygon
+
+        """
+        multisolid = lib.sfcgal_multi_solid_create()
+        if coordinates:
+            for coords in coordinates:
+                solid = Solid.sfcgal_geom_from_coordinates(coords)
+                lib.sfcgal_geometry_collection_add_geometry(multisolid, solid)
+        return multisolid
+
+
 class GeometryCollection(GeometryCollectionBase):
     def __init__(self):
         self._geom = lib.sfcgal_geometry_collection_create()
@@ -3345,6 +3372,7 @@ geom_type_to_cls = {
     lib.SFCGAL_TYPE_TRIANGLE: Triangle,
     lib.SFCGAL_TYPE_POLYHEDRALSURFACE: PolyhedralSurface,
     lib.SFCGAL_TYPE_SOLID: Solid,
+    lib.SFCGAL_TYPE_MULTISOLID: MultiSolid,
 }
 
 # Dictionary mapping geometry names to their corresponding type IDs
@@ -3360,6 +3388,7 @@ geom_types = {
     "Triangle": lib.SFCGAL_TYPE_TRIANGLE,
     "PolyhedralSurface": lib.SFCGAL_TYPE_POLYHEDRALSURFACE,
     "SOLID": lib.SFCGAL_TYPE_SOLID,
+    "MultiSolid": lib.SFCGAL_TYPE_MULTISOLID,
 }
 
 # Reverse mapping from type IDs to geometry names
