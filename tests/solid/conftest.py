@@ -2,7 +2,7 @@ import itertools
 
 import pytest
 
-from pysfcgal.sfcgal import PolyhedralSurface, Solid
+from pysfcgal.sfcgal import MultiSolid, PolyhedralSurface, Solid
 
 
 def from_point_list_to_cube_coordinates(points):
@@ -82,37 +82,33 @@ def solid_unordered(points_ext, points_int_1, points_int_2):
     yield Solid([points_ext, points_int_2, points_int_1])
 
 
-def test_solid(
-    solid, expected_polyhedralsurfaces, solid_without_holes, solid_unordered
-):
-    assert solid.n_shells == 3
-    # iteration
-    for shell, expected_polyhedral in zip(solid, expected_polyhedralsurfaces):
-        assert shell == expected_polyhedral
-    # indexing
-    for idx in range(solid.n_shells):
-        solid[idx] == expected_polyhedralsurfaces[idx]
-    solid[-1] == expected_polyhedralsurfaces[-1]
-    solid[1:3] == expected_polyhedralsurfaces[1:3]
-    # equality
-    assert solid != solid_without_holes
-    assert solid != solid_unordered
+@pytest.fixture
+def multisolid(solid, solid_without_holes, solid_unordered):
+    yield MultiSolid(
+        [
+            solid.to_coordinates(),
+            solid_without_holes.to_coordinates(),
+            solid_unordered.to_coordinates(),
+        ]
+    )
 
 
-def test_solid_to_polyhedralsurface(solid, composed_polyhedralsurface):
-    phs = solid.to_polyhedralsurface(wrapped=True)
-    assert not phs.is_valid()  # PolyhedralSurface with interior shells
-    assert phs.geom_type == "PolyhedralSurface"
-    assert phs == composed_polyhedralsurface
+@pytest.fixture
+def other_multisolid(solid):
+    yield MultiSolid([solid.to_coordinates()])
 
 
-def test_solid_to_coordinates(solid, points_ext, points_int_1, points_int_2):
-    assert solid.to_coordinates() == [points_ext, points_int_1, points_int_2]
-    other_solid = Solid.from_coordinates(solid.to_coordinates())
-    assert other_solid == solid
+@pytest.fixture
+def multisolid_unordered(solid, solid_without_holes, solid_unordered):
+    yield MultiSolid(
+        [
+            solid_without_holes.to_coordinates(),
+            solid_unordered.to_coordinates(),
+            solid.to_coordinates(),
+        ]
+    )
 
 
-def test_solid_to_dict(solid):
-    solid_data = solid.to_dict()
-    other_solid = Solid.from_dict(solid_data)
-    assert other_solid == solid
+@pytest.fixture
+def expected_solids(solid, solid_without_holes, solid_unordered):
+    yield [solid, solid_without_holes, solid_unordered]

@@ -3150,7 +3150,7 @@ class MultiSolid(GeometryCollectionBase):
         Returns
         -------
         _cffi_backend._CDatabase
-            A pointer towards a SFCGAL MultiPolygon
+            A pointer towards a SFCGAL MultiSolid
 
         """
         multisolid = lib.sfcgal_multi_solid_create()
