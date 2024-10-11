@@ -93,7 +93,7 @@ build:windows-osgeo4w-wheel:
       when: always
     # on a MR if previous jobs are successful
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
-      when: manual
+      when: always
       allow_failure: true
   artifacts:
     paths:
@@ -123,7 +123,7 @@ build:linux-wheel-python:
       when: always
     # on a MR if previous jobs are successful
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
-      when: manual
+      when: always
       allow_failure: true
   variables:
     SFCGAL_REGISTRY: registry.gitlab.com/sfcgal/sfcgal
@@ -165,6 +165,29 @@ deploy:pypi:
     - cp -r dist_windows/* dist/
     - cp -r dist_linux_*/* dist/
     - twine upload dist/*
+
+deploy:pypi-test:
+  stage: 🚀 deploy
+  image: ${PYTHON_DOCKER_IMAGE}
+  only:
+    refs:
+      - merge_requests
+      - master
+    changes:
+      - "pysfcgal/*.py"
+      - "tests/*.py"
+      - ".gitlab-ci.yml"
+  needs:
+    - job: build:linux-wheel-python
+      artifacts: true
+  before_script:
+    - pip install twine
+  script:
+    - echo $TWINE_USERNAME
+    - mkdir dist
+    - cp -r dist_linux_*/* dist/
+    - ls dist
+    - twine upload --user __token__ --password ${PYPI_TEST_API_TOKEN} --verbose --repository testpypi dist/*
 
 build:documentation:
   stage: 📦 build
