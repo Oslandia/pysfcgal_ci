@@ -8,6 +8,16 @@ variables:
   PYTHON_DOCKER_IMAGE: python:3.12-slim-bookworm
   SFCGAL_REGISTRY: registry.gitlab.com/sfcgal/sfcgal
 
+foo:
+  stage: 🐍 lint
+  image: ${PYTHON_DOCKER_IMAGE}
+  only:
+    refs:
+      - merge_requests
+      - master
+  script:
+    - echo '$FOO'
+
 lint:flake8:
   stage: 🐍 lint
   image: ${PYTHON_DOCKER_IMAGE}
