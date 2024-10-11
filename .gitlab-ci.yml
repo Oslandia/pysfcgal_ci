@@ -144,6 +144,22 @@ build:linux-wheel-python:
     paths:
       - dist_linux_$PYTHON_VERSION
 
+build:release_notes:
+  stage: 📦 build
+  image: debian:bullseye-slim
+  # rules:
+  # - if: '$CI_COMMIT_TAG =~ /^v?\d+\.\d+\.\d+$/'
+  rules:
+    # on default branch
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+      when: always
+  script:
+    - apt update && apt install --no-install-recommends -y ca-certificates curl jq
+    - 'curl -H "PRIVATE-TOKEN: $CI_API_TOKEN" "$CI_API_V4_URL/projects/$CI_PROJECT_ID/repository/changelog?version=$CI_COMMIT_TAG" | jq -r .notes > release_notes.md'
+  artifacts:
+    paths:
+    - release_notes.md
+
 deploy:pypi:
   stage: 🚀 deploy
   image: ${PYTHON_DOCKER_IMAGE}
@@ -208,3 +224,18 @@ pages:
   artifacts:
     paths:
       - public
+
+deploy:release:
+  stage: 🚀 deploy
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  needs:
+    - job: build:release_notes
+      artifacts: true
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v?\d+\.\d+\.\d+$/'
+  script:
+    - echo "running release_job"
+  release:
+    name: 'Release $CI_COMMIT_TAG'
+    description: release_notes.md
+    tag_name: '$CI_COMMIT_TAG'
