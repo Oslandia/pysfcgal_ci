@@ -2582,7 +2582,7 @@ class Tin(GeometryCollectionBase):
             return False
         return self[:] == other[:]
 
-    def to_multipolygon(self, wrapped: bool = False) -> MultiPolygon:
+    def to_multipolygon(self, wrapped: bool = False) -> Union[MultiPolygon, ffi.CData]:
         """Convert the TIN to a MultiPolygon.
 
         Parameters
@@ -2744,7 +2744,7 @@ class Triangle(Geometry):
             return False
         return all(vertex == other_vertex for vertex, other_vertex in zip(self, other))
 
-    def to_polygon(self, wrapped: bool = True) -> Polygon:
+    def to_polygon(self, wrapped: bool = True) -> Union[Polygon, ffi.CData]:
         """Convert the triangle to a Polygon.
 
         Parameters
