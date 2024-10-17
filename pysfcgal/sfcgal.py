@@ -1661,7 +1661,7 @@ class Point(Geometry):
 
     @cond_icontract(
         lambda self, radius, segments: (
-            self.is_valid() and radius > 0 and segments > 2
+            self.is_valid() and radius > 0 and segments > 3
         ),
         "require",
     )
@@ -1891,7 +1891,7 @@ class LineString(Geometry):
 
     @cond_icontract(
         lambda self, radius, segments, buffer_type: (
-            self.is_valid() and radius > 0 and segments > 2 and (
+            self.is_valid() and radius > 0 and segments > 3 and (
                 isinstance(buffer_type, BufferType)
                 or (isinstance(buffer_type, int) and buffer_type in (0, 1, 2))
             )
