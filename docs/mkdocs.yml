@@ -42,7 +42,5 @@ extra_css:
 
 nav:
   - Home: index.md
-  - User guide:
-        - Installation: user_guide/build.md
-  - API Reference:
-        - API: api_reference/api.md
+  - Installation: build.md
+  - API Reference: api.md
