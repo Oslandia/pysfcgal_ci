@@ -1,17 +1,24 @@
 # PySFCGAL - Documentation
 
+## Description
+
+An official wrapper around the [SFCGAL](https://sfcgal.gitlab.io/SFCGAL/) library for Python in the style of Shapely.
+
 ![SFCGAL logo](assets/img/sfcgal.png)
 
-**Description:** An official wrapper around the SFCGAL library for Python in the style of Shapely.
+## Authors
 
-**Author and contributors:** Loïc Bartoletti, Raphaël Delhome, Jean Felder, Florent Fougères
+- Loïc Bartoletti
+- Raphaël Delhome
+- Jean Felder
+- Florent Fougères
 
-**Initial work** : This project is a fork of the [project](https://github.com/snorfalorpagus/pysfcgal/) created by [Joshua Arnott](https://github.com/snorfalorpagus).
+## Initial tribute
 
-**Sponsored by** : [OSLANDIA](https://www.oslandia.com)
+This project is a fork of the [project](https://github.com/snorfalorpagus/pysfcgal/) created by [Joshua Arnott](https://github.com/snorfalorpagus).
 
-**Version:** 2.0.0
+## Sponsor
 
-**Source code:** [http://www.sfcgal.org/](http://www.sfcgal.org/)
+[OSLANDIA](https://www.oslandia.com)
 
-**Powered by [SFCGAL Contributors](https://sfcgal.gitlab.io/SFCGAL/)**
+Powered by [SFCGAL Contributors](https://sfcgal.gitlab.io/SFCGAL/)

@@ -18,15 +18,16 @@ pip install pysfcgal
 ### Build dependencies
 
 The dependencies required for the build are:
+
 - gmp
 - boost
 - mpfr
 - cmake
 - cgal*
 
-*Install SFCGAL with your package manager (apt, yum, pacman, pkg, etc) or with the sources if your system doesn't offer the package.*
+Install SFCGAL with your package manager (apt, yum, pacman, pkg, etc) or with the sources if your system doesn't offer the package.
 
-Example for debian/ubuntu users
+Example for debian/ubuntu users:
 
 ```shell
 apt install -y cmake libgmp-dev libmpfr-dev libboost-dev libboost-timer-dev libboost-test-dev
@@ -40,18 +41,18 @@ To be done if your distribution does not provide the updated package (minimum `5
 wget "https://github.com/CGAL/cgal/releases/download/v5.6/CGAL-5.6.tar.xz" -O CGAL-5.6.tar.xz
 tar xJf CGAL-5.6.tar.xz
 ```
-Remember your path to CGAL - we'll need it later.
-Example, path to CDAL: `/home/foo/CGAL-5.6`
+
+Remember your path to CGAL - we'll need it later. Example: `/home/foo/CGAL-5.6`.
 
 ### SFCGAL
 
-Clone and place in the [sfcgal](https://gitlab.com/sfcgal/SFCGAL) folder
+Clone [SFCGAL](https://gitlab.com/sfcgal/SFCGAL) and place yourself in the `SFCGAL` folder:
 
 ```shell
 git clone git@gitlab.com:sfcgal/SFCGAL.git && cd SFCGAL
 ```
 
-Path to CGAL is useful here.
+Then build SFCGAL considering the path to CGAL:
 
 ```shell
 cmake -GNinja -S . -B build -DSFCGAL_BUILD_TESTS=ON -DCGAL_DIR=/home/foo/CGAL-5.6
@@ -60,36 +61,48 @@ cmake --build build
 
 The build includes can be found here: `/home/foo/SFCGAL/build/src`
 
+You may optionally install SFCGAL to your system through:
+
+```shell
+cmake --install build
+```
+
 ### PySFCGAL
 
 #### Build the python module
 
-To start you have to clone and place yourself in [pysfcgal](https://gitlab.com/sfcgal/pysfcgal).
+To start you have to clone [pysfcgal](https://gitlab.com/sfcgal/pysfcgal) and place yourself in the `pysfcgal` folder:
 
 ```shell
 git clone git@gitlab.com:sfcgal/pysfcgal.git && cd pysfcgal
 ```
 
-LDFLAGS: path we find `libSFCGAL.so`
-CFLAGS: path where the build includes are located
+Then install the Python binding through:
 
 ```shell
 env CFLAGS=-I/home/foo/SFCGAL/build/include LDFLAGS=-L/home/foo/SFCGAL/build/src python3 setup.py build install --user
 ```
 
+Where:
+
+- `LDFLAGS` is the path where to find `libSFCGAL.so`
+- `CFLAGS` is the path where the build includes are located
+
+#### Add the build source link of SFCGAL into the ld file (on Debian/Ubuntu)
+
+The Pysfcgal installation ends with the modification of your `LD_LIBRARY_PATH` variable:
+
 ```shell
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/foo/SFCGAL/build/src
 ```
 
-#### Add the build source link of SFCGAL into the ld file (on Debian/Ubuntu)
-
-Create the following file
+Alternatively, you may create a ldconfig file as follows:
 
 ```shell
 echo "/home/foo/SFCGAL/build/src" >> /etc/ld.so.conf.d/sfcgal.conf
 ```
 
-#### Run this command to apply the changes
+and run this command to apply the changes:
 
 ```shell
 sudo ldconfig
