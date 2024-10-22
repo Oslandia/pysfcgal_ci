@@ -475,7 +475,7 @@ class Geometry:
         """
         return lib.sfcgal_geometry_is_valid(self._geom) != 0
 
-    def is_valid_detail(self) -> Tuple[str, None]:
+    def is_valid_detail(self) -> Tuple[Optional[str], None]:
         """
         Provide detailed information about the validity of the geometry.
 
@@ -490,7 +490,13 @@ class Geometry:
         lib.sfcgal_geometry_is_valid_detail(
             self._geom, invalidity_reason, invalidity_location
         )
-        return (ffi.string(invalidity_reason[0]).decode("utf-8"), None)
+        ffi_invalidity_reason = invalidity_reason[0]
+
+        # If ffi_invalidity_reason is Null, the geometry is valid.
+        if ffi_invalidity_reason == ffi.NULL:
+            return (None, None)
+
+        return (ffi.string(ffi_invalidity_reason).decode("utf-8"), None)
 
     def is_planar(self) -> bool:
         """

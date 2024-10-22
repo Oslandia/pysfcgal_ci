@@ -749,3 +749,16 @@ def test_rhr_lhr():
     geom = Polygon.from_wkt(allCCW)
     lhr = geom.force_lhr().to_wkt(0)
     assert lhr == extCCW_intCW
+
+
+def test_is_valid_detail():
+    valid_polygon_wkt = "POLYGON ((0 5,5 5,5 0,0 0,0 5),(2 1,2 2,1 2,1 1,2 1),(4 3,4 4,3 4,3 3,4 3))"  # noqa: E501
+    valid_polygon = Polygon.from_wkt(valid_polygon_wkt)
+    valid_detail_msg, _ = valid_polygon.is_valid_detail()
+    assert valid_detail_msg is None
+
+    # invalid polygon which self intersects
+    invalid_polygon_wkt = "POLYGON ((0 5,5 0,5 5,0 0,0 5))"
+    invalid_polygon = Polygon.from_wkt(invalid_polygon_wkt)
+    invalid_detail_msg, _ = invalid_polygon.is_valid_detail()
+    assert invalid_detail_msg == "ring 0 self intersects"
