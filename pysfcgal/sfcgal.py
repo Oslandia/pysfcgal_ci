@@ -3229,7 +3229,7 @@ class GeometryCollection(GeometryCollectionBase):
     def __init__(self):
         self._geom = lib.sfcgal_geometry_collection_create()
 
-    def addGeometry(self, geometry: Geometry) -> None:
+    def add_geometry(self, geometry: Geometry) -> None:
         """Add a geometry to the collection.
 
         Parameters
@@ -3238,6 +3238,17 @@ class GeometryCollection(GeometryCollectionBase):
             The geometry to add.
         """
         self._add_geometry(geometry)
+
+    def addGeometry(self, geometry: Geometry) -> None:
+        """Add a geometry to the collection.
+        This function is deprecated. Use add_geometry instead.
+
+        Parameters
+        ----------
+        geometry: Geometry
+            The geometry to add.
+        """
+        self.add_geometry(geometry)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, GeometryCollection):
