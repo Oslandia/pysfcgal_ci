@@ -30,3 +30,23 @@ def c2():
 @pytest.fixture
 def c3():
     yield (0., 0., 1.)
+
+
+@pytest.fixture
+def ring1():
+    yield [(0., 0.), (10., 0.), (10., 10.), (0., 10.), (0., 0.)]
+
+
+@pytest.fixture
+def ring2():
+    yield [(-1., -1.), (1., -1.), (1., 1.), (-1., 1.), (-1., -1.)]
+
+
+@pytest.fixture
+def ring3():
+    yield [(2., 2.), (3., 2.), (3., 3.), (2., 2.)]
+
+
+@pytest.fixture
+def ring4():
+    yield [(5., 5.), (5., 6.), (6., 6.), (5., 5.)]

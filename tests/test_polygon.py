@@ -4,63 +4,43 @@ from pysfcgal.sfcgal import GeometryCollection, LineString, Point, Polygon
 
 
 @pytest.fixture
-def ext_ring1():
-    yield [(0., 0.), (10., 0.), (10., 10.), (0., 10.), (0., 0.)]
-
-
-@pytest.fixture
-def ext_ring2():
-    yield [(-1., -1.), (1., -1.), (1., 1.), (-1., 1.), (-1., -1.)]
-
-
-@pytest.fixture
-def int_ring1():
-    yield [(2., 2.), (3., 2.), (3., 3.), (2., 2.)]
-
-
-@pytest.fixture
-def int_ring2():
-    yield [(5., 5.), (5., 6.), (6., 6.), (5., 5.)]
-
-
-@pytest.fixture
 def point_in_poly():
     yield Point(2., 3.)
 
 
 @pytest.fixture
-def polygon1(ext_ring1):
-    yield Polygon(ext_ring1)
+def polygon1(ring1):
+    yield Polygon(ring1)
 
 
 @pytest.fixture
-def polygon2(ext_ring2):
-    yield Polygon(ext_ring2)
+def polygon2(ring2):
+    yield Polygon(ring2)
 
 
 @pytest.fixture
-def polygon_with_hole(ext_ring1, int_ring1, int_ring2):
-    yield Polygon(exterior=ext_ring1, interiors=[int_ring1, int_ring2])
+def polygon_with_hole(ring1, ring3, ring4):
+    yield Polygon(exterior=ring1, interiors=[ring3, ring4])
 
 
 @pytest.fixture
-def polygon_with_hole_unclosed(ext_ring1, int_ring1, int_ring2):
-    yield Polygon(exterior=ext_ring1[:-1], interiors=[int_ring1[:-1], int_ring2[:-1]])
+def polygon_with_hole_unclosed(ring1, ring3, ring4):
+    yield Polygon(exterior=ring1[:-1], interiors=[ring3[:-1], ring4[:-1]])
 
 
 @pytest.fixture
-def linestring1(ext_ring1):
-    yield LineString(ext_ring1)
+def linestring1(ring1):
+    yield LineString(ring1)
 
 
 @pytest.fixture
-def linestring2(int_ring1):
-    yield LineString(int_ring1)
+def linestring2(ring3):
+    yield LineString(ring3)
 
 
 @pytest.fixture
-def linestring3(int_ring2):
-    yield LineString(int_ring2)
+def linestring3(ring4):
+    yield LineString(ring4)
 
 
 def test_polygon_rings(polygon_with_hole, linestring1, linestring2, linestring3):
@@ -90,8 +70,8 @@ def test_polygon_equality(polygon_with_hole, polygon1, polygon_with_hole_unclose
     assert polygon_with_hole != polygon1
 
 
-def test_polygon_to_coordinates(polygon1, ext_ring1):
-    assert polygon1.to_coordinates() == [ext_ring1]
+def test_polygon_to_coordinates(polygon1, ring1):
+    assert polygon1.to_coordinates() == [ring1]
     cloned_polygon = Polygon(*polygon1.to_coordinates())
     assert cloned_polygon == polygon1
     other_polygon = Polygon.from_coordinates(polygon1.to_coordinates())
@@ -130,22 +110,22 @@ def test_intersection_polygon_polygon(polygon1, polygon2):
     # TODO: check coordinates
 
 
-def test_translate_2d(polygon1, ext_ring1):
+def test_translate_2d(polygon1, ring1):
     dx = 10.
     dy = 20.
     translated_polygon = polygon1.translate_2d(dx, dy)
-    expected_ring_coordinates = [(x + dx, y + dy) for x, y in ext_ring1]
+    expected_ring_coordinates = [(x + dx, y + dy) for x, y in ring1]
     assert translated_polygon.to_coordinates() == [expected_ring_coordinates]
     reverted_polygon = translated_polygon.translate_2d(-dx, -dy)
     assert polygon1.to_coordinates() == reverted_polygon.to_coordinates()
 
 
-def test_translate_3d(polygon1, ext_ring1):
+def test_translate_3d(polygon1, ring1):
     dx = 10.
     dy = 20.
     dz = 30.
     translated_polygon = polygon1.translate_3d(dx, dy, dz)
-    expected_ring_coordinates = [(x + dx, y + dy, dz) for x, y in ext_ring1]
+    expected_ring_coordinates = [(x + dx, y + dy, dz) for x, y in ring1]
     assert translated_polygon.to_coordinates() == [expected_ring_coordinates]
     # Apply a 2D-translation to a 3D geometry makes a 2D geometry
     reverted_polygon = translated_polygon.translate_2d(-dx, -dy)

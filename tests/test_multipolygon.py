@@ -4,43 +4,23 @@ from pysfcgal.sfcgal import MultiPolygon, Polygon
 
 
 @pytest.fixture
-def ext_ring1():
-    yield [(0., 0.), (10., 0.), (10., 10.), (0., 10.), (0., 0.)]
+def multipolygon(ring1, ring3, ring4):
+    yield MultiPolygon([[ring1], [ring3], [ring4]])
 
 
 @pytest.fixture
-def ext_ring2():
-    yield [(-1., -1.), (1., -1.), (1., 1.), (-1., 1.), (-1., -1.)]
+def other_multipolygon(ring1, ring3, ring2):
+    yield MultiPolygon([[ring1], [ring3], [ring2]])
 
 
 @pytest.fixture
-def int_ring1():
-    yield [(2., 2.), (3., 2.), (3., 3.), (2., 2.)]
+def multipolygon_unordered(ring1, ring3, ring4):
+    yield MultiPolygon([[ring4], [ring1], [ring3]])
 
 
 @pytest.fixture
-def int_ring2():
-    yield [(5., 5.), (5., 6.), (6., 6.), (5., 5.)]
-
-
-@pytest.fixture
-def multipolygon(ext_ring1, int_ring1, int_ring2):
-    yield MultiPolygon([[ext_ring1], [int_ring1], [int_ring2]])
-
-
-@pytest.fixture
-def other_multipolygon(ext_ring1, int_ring1, ext_ring2):
-    yield MultiPolygon([[ext_ring1], [int_ring1], [ext_ring2]])
-
-
-@pytest.fixture
-def multipolygon_unordered(ext_ring1, int_ring1, int_ring2):
-    yield MultiPolygon([[int_ring2], [ext_ring1], [int_ring1]])
-
-
-@pytest.fixture
-def expected_polygons(ext_ring1, int_ring1, int_ring2):
-    yield [Polygon(ext_ring1), Polygon(int_ring1), Polygon(int_ring2)]
+def expected_polygons(ring1, ring3, ring4):
+    yield [Polygon(ring1), Polygon(ring3), Polygon(ring4)]
 
 
 def test_multipolygon_iteration(multipolygon, expected_polygons):
@@ -62,8 +42,8 @@ def test_multipolygon_equality(
     assert multipolygon != multipolygon_unordered  # the order is important
 
 
-def test_multipolygon_to_coordinates(multipolygon, ext_ring1, int_ring1, int_ring2):
-    assert multipolygon.to_coordinates() == [[ext_ring1], [int_ring1], [int_ring2]]
+def test_multipolygon_to_coordinates(multipolygon, ring1, ring3, ring4):
+    assert multipolygon.to_coordinates() == [[ring1], [ring3], [ring4]]
     cloned_multipolygon = MultiPolygon(multipolygon.to_coordinates())
     assert cloned_multipolygon == multipolygon
     other_multipolygon = MultiPolygon.from_coordinates(multipolygon.to_coordinates())
