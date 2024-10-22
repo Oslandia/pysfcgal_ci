@@ -2728,6 +2728,18 @@ class Tin(GeometryCollectionBase):
             lib.sfcgal_triangulated_surface_add_triangle(tin, triangle)
         return tin
 
+    @cond_icontract(lambda self, triangle: triangle.geom_type == "Triangle", "require")
+    def add_triangle(self, triangle: Triangle) -> None:
+        """Add a triangle to the Tin.
+
+        Parameters
+        ----------
+        triangle: Triangle
+            The triangle to add.
+        """
+        triangle_clone = lib.sfcgal_geometry_clone(triangle._geom)
+        lib.sfcgal_triangulated_surface_add_triangle(self._geom, triangle_clone)
+
 
 class Triangle(Geometry):
     def __init__(self, coords=None):

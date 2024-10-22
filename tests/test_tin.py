@@ -1,6 +1,10 @@
 import pytest
 
-from pysfcgal.sfcgal import MultiPolygon, Tin, Triangle
+from pysfcgal.sfcgal import (LineString, MultiPolygon, Tin, Triangle,
+                             has_icontract)
+
+if has_icontract:
+    import icontract
 
 
 @pytest.fixture
@@ -91,3 +95,18 @@ def test_tin_to_dict(tin):
     tin_data = tin.to_dict()
     other_tin = Tin.from_dict(tin_data)
     assert other_tin == tin
+
+
+def test_tin_add_triangle(tin, c000, c100, c010, c001):
+    new_triangle = Triangle([c010, c100, c001])
+    assert len(tin) == 4
+    assert new_triangle not in tin
+
+    tin.add_triangle(new_triangle)
+    assert len(tin) == 5
+    assert new_triangle in tin
+
+    # try to add a linestring to a multipoint
+    if has_icontract:
+        with pytest.raises(icontract.errors.ViolationError):
+            tin.add_triangle(LineString([c000, c100, c010]))
