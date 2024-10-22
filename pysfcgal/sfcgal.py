@@ -1674,7 +1674,7 @@ class Point(Geometry):
         radius : float
             The buffer radius
         segments : int
-            The number of segmetns to use for approximating curved surfaces
+            The number of segments to use for approximating curved surfaces
 
         Returns
         -------
@@ -1909,7 +1909,7 @@ class LineString(Geometry):
         radius : float
             The buffer radius
         segments : int
-            The number of segmetns to use for approximating curved surfaces
+            The number of segments to use for approximating curved surfaces
         buffer_type : BufferType|int
             Either 0 (SFCGAL_BUFFER3D_ROUND, Minkowski sum with a sphere),
             1 (SFCGAL_BUFFER3D_CYLSPHERE: Union of cylinders and spheres) or
