@@ -2555,6 +2555,18 @@ class MultiPolygon(GeometryCollectionBase):
                 lib.sfcgal_geometry_collection_add_geometry(multipolygon, polygon)
         return multipolygon
 
+    @cond_icontract(
+        lambda self, polygon: polygon.geom_type == "Polygon", "require")
+    def add_polygon(self, polygon: Polygon) -> None:
+        """Add a polygon to the multipolygon.
+
+        Parameters
+        ----------
+        polygon: Polygon
+            The polygon to add.
+        """
+        self._add_geometry(polygon)
+
 
 class Tin(GeometryCollectionBase):
     def __init__(self, coords=None):
