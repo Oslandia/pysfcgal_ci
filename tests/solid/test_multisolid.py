@@ -1,6 +1,11 @@
 from pysfcgal.sfcgal import MultiSolid
 
 
+def test_multisolid_constructor(multisolid):
+    empty_multisolid = MultiSolid()
+    assert empty_multisolid.to_wkt() == "MULTISOLID EMPTY"
+
+
 def test_multisolid_iteration(multisolid, expected_solids):
     for polygon, expected_polygon in zip(multisolid, expected_solids):
         assert polygon == expected_polygon

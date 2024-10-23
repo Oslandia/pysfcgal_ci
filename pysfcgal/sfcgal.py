@@ -3184,7 +3184,16 @@ class Solid(GeometryCollectionBase):
 
 
 class MultiSolid(GeometryCollectionBase):
-    def __init__(self, coords=None):
+    def __init__(self, coords: Tuple = ()):
+        """Initialize the MultiSolid with the given coordinates.
+
+        Parameters
+        ----------
+        coords : tuples, optional
+            A tuple where each element is the coordinates of a solid
+            If coords is empty, an empty MultiSolid is created.
+
+        """
         self._geom = MultiSolid.sfcgal_geom_from_coordinates(coords)
 
     @staticmethod
