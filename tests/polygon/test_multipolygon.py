@@ -4,43 +4,23 @@ from pysfcgal.sfcgal import MultiPolygon, Polygon
 
 
 @pytest.fixture
-def ext_ring1():
-    yield [(0., 0.), (10., 0.), (10., 10.), (0., 10.), (0., 0.)]
+def multipolygon(ring_around_0, small_ring_23, small_ring_56):
+    yield MultiPolygon([[ring_around_0], [small_ring_23], [small_ring_56]])
 
 
 @pytest.fixture
-def ext_ring2():
-    yield [(-1., -1.), (1., -1.), (1., 1.), (-1., 1.), (-1., -1.)]
+def other_multipolygon(ring_around_0, small_ring_23, big_ring):
+    yield MultiPolygon([[ring_around_0], [small_ring_23], [big_ring]])
 
 
 @pytest.fixture
-def int_ring1():
-    yield [(2., 2.), (3., 2.), (3., 3.), (2., 2.)]
+def multipolygon_unordered(ring_around_0, small_ring_23, small_ring_56):
+    yield MultiPolygon([[small_ring_56], [ring_around_0], [small_ring_23]])
 
 
 @pytest.fixture
-def int_ring2():
-    yield [(5., 5.), (5., 6.), (6., 6.), (5., 5.)]
-
-
-@pytest.fixture
-def multipolygon(ext_ring1, int_ring1, int_ring2):
-    yield MultiPolygon([[ext_ring1], [int_ring1], [int_ring2]])
-
-
-@pytest.fixture
-def other_multipolygon(ext_ring1, int_ring1, ext_ring2):
-    yield MultiPolygon([[ext_ring1], [int_ring1], [ext_ring2]])
-
-
-@pytest.fixture
-def multipolygon_unordered(ext_ring1, int_ring1, int_ring2):
-    yield MultiPolygon([[int_ring2], [ext_ring1], [int_ring1]])
-
-
-@pytest.fixture
-def expected_polygons(ext_ring1, int_ring1, int_ring2):
-    yield [Polygon(ext_ring1), Polygon(int_ring1), Polygon(int_ring2)]
+def expected_polygons(ring_around_0, small_ring_23, small_ring_56):
+    yield [Polygon(ring_around_0), Polygon(small_ring_23), Polygon(small_ring_56)]
 
 
 def test_multipolygon_iteration(multipolygon, expected_polygons):
@@ -62,8 +42,12 @@ def test_multipolygon_equality(
     assert multipolygon != multipolygon_unordered  # the order is important
 
 
-def test_multipolygon_to_coordinates(multipolygon, ext_ring1, int_ring1, int_ring2):
-    assert multipolygon.to_coordinates() == [[ext_ring1], [int_ring1], [int_ring2]]
+def test_multipolygon_to_coordinates(
+    multipolygon, ring_around_0, small_ring_23, small_ring_56
+):
+    assert multipolygon.to_coordinates() == [
+        [ring_around_0], [small_ring_23], [small_ring_56]
+    ]
     cloned_multipolygon = MultiPolygon(multipolygon.to_coordinates())
     assert cloned_multipolygon == multipolygon
     other_multipolygon = MultiPolygon.from_coordinates(multipolygon.to_coordinates())
