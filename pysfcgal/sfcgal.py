@@ -2477,7 +2477,21 @@ class MultiLineString(GeometryCollectionBase):
 
 
 class MultiPolygon(GeometryCollectionBase):
-    def __init__(self, coords=None):
+    def __init__(self, coords: Tuple = ()):
+        """Initialize the MultiPolygon with a tuple of coordinates.
+
+        Parameters
+        ----------
+        coords : Tuple
+            MultiPolygon coordinates.
+            If coords is empty, an empty MultiPolygon is created.
+
+        Returns
+        -------
+        MultiPolygon
+            A MultiPolygon with coordinates coords
+
+        """
         self._geom = MultiPolygon.sfcgal_geom_from_coordinates(coords)
 
     @staticmethod
