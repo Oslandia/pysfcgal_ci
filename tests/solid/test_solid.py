@@ -1,4 +1,9 @@
-from pysfcgal.sfcgal import Solid
+import pytest
+
+from pysfcgal.sfcgal import LineString, PolyhedralSurface, Solid, has_icontract
+
+if has_icontract:
+    import icontract
 
 
 def test_solid(
@@ -35,3 +40,21 @@ def test_solid_to_dict(solid_1):
     solid_data = solid_1.to_dict()
     other_solid = Solid.from_dict(solid_data)
     assert other_solid == solid_1
+
+
+def test_solid_set_exterior_shell(
+        solid_1, points_ext_1, points_ext_2, c000, c100, c010):
+    new_exterior_shell = PolyhedralSurface(points_ext_2)
+
+    assert solid_1.n_shells == 3
+    assert solid_1.shells[0] == PolyhedralSurface(points_ext_1)
+    assert new_exterior_shell not in solid_1
+
+    solid_1.set_exterior_shell(new_exterior_shell)
+    assert solid_1.n_shells == 3
+    assert solid_1.shells[0] == new_exterior_shell
+
+    # try to set a linestring as exterior shell
+    if has_icontract:
+        with pytest.raises(icontract.errors.ViolationError):
+            solid_1.set_exterior_shell(LineString([c000, c100, c010]))
