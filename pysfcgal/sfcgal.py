@@ -1365,7 +1365,7 @@ class Geometry:
 
         Parameters
         ----------
-        coordinates: list
+        coordinates : list
             Geometry coordinates, the list structure depends on the geometry type.
 
         Returns
@@ -1387,7 +1387,7 @@ class Geometry:
 
         Parameters
         ----------
-        geojson_data: dict
+        geojson_data : dict
             Geometry description, in a geojson-like format
 
         Returns
@@ -1712,7 +1712,7 @@ class Point(Geometry):
 
         Parameters
         ----------
-        coordinates: list
+        coordinates : list
             Point coordinates.
 
         Returns
@@ -1729,7 +1729,7 @@ class Point(Geometry):
 
         Parameters
         ----------
-        coordinates: list
+        coordinates : list
             Point coordinates.
 
         Returns
@@ -1951,9 +1951,9 @@ class LineString(Geometry):
 
         Parameters
         ----------
-        coordinates: list
+        coordinates : list
             LineString coordinates.
-        close: bool
+        close : bool
             If True, the LineString is built as closed even if the coordinates are not,
             i.e. the first point is replicated at the last position.
 
@@ -2185,7 +2185,7 @@ class Polygon(Geometry):
 
         Parameters
         ----------
-        coordinates: list
+        coordinates : list
             Polygon coordinates. The first item corresponds to the coordinates of the
             exterior ring, whilst the following items are the coordinates of the
             interior rings, if they exist.
@@ -2204,7 +2204,7 @@ class Polygon(Geometry):
 
         Parameters
         ----------
-        coordinates: list
+        coordinates : list
             Polygon coordinates.
 
         Returns
@@ -2500,7 +2500,7 @@ class MultiPolygon(GeometryCollectionBase):
 
         Parameters
         ----------
-        coordinates: Tuple
+        coordinates : Tuple
             MultiPolygon coordinates.
 
         Returns
@@ -2662,7 +2662,7 @@ class Tin(GeometryCollectionBase):
 
         Parameters
         ----------
-        coordinates: list
+        coordinates : list
             Tin coordinates.
 
         Returns
@@ -2832,7 +2832,7 @@ class Triangle(Geometry):
 
         Parameters
         ----------
-        coordinates: list
+        coordinates : list
             Triangle coordinates.
 
         Returns
@@ -2984,7 +2984,7 @@ class PolyhedralSurface(GeometryCollectionBase):
 
         Parameters
         ----------
-        coordinates: list
+        coordinates : list
             PolyhedralSurface coordinates.
 
         Returns
@@ -3276,7 +3276,7 @@ class GeometryCollection(GeometryCollectionBase):
 
         Parameters
         ----------
-        geojson_data: dict
+        geojson_data : dict
             Description of the collection, in a geojson-like format
 
         Returns
