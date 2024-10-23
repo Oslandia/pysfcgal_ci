@@ -13,7 +13,11 @@ for t in [triangle, triangle]:
     triangle = Triangle.from_sfcgal_geometry(triangle._geom)
     """
     proc = run(f"python3 -c '{segfault_code}'", shell=True, stdout=PIPE, stderr=PIPE)
-    assert proc.stderr == b"Segmentation fault (core dumped)\n"
+    possibles_error_msg = [
+        b"Segmentation fault (core dumped)\n",
+        b'Segmentation fault\n'
+    ]
+    assert proc.stderr in possibles_error_msg
     with pytest.raises(CalledProcessError):
         proc.check_returncode()
 
