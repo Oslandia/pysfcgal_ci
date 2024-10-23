@@ -620,6 +620,18 @@ sfcgal_solid_add_interior_shell(sfcgal_geometry_t *solid,
                                 sfcgal_geometry_t *shell);
 
 /**
+ * Set the exterior shell of a given Solid
+ * @pre solid must be a Solid
+ * @pre shell must be a PolyhedralSurface
+ * @post the ownership of the shell is taken. The caller is not responsible
+ * anymore of its deallocation
+ * @ingroup capi
+ */
+void
+sfcgal_solid_set_exterior_shell(sfcgal_geometry_t *solid,
+                                sfcgal_geometry_t *shell);
+
+/**
  * Gets the validity flag of the geometry.
  */
 int
@@ -1063,6 +1075,7 @@ sfcgal_geometry_approximate_medial_axis(const sfcgal_geometry_t *geom);
 /**
  * Returns the straight skeleton partition for the given Polygon
  * @pre isValid(geom) == true
+ * @pre geom must be a Polygon, Triangle or MultiPolygon
  * @post isValid(return) == true
  * @ingroup capi
  */
@@ -1110,6 +1123,9 @@ sfcgal_geometry_line_sub_string(const sfcgal_geometry_t *geom, double start,
  * @post isValid(return) == true
  * @ingroup capi
  */
+sfcgal_geometry_t *
+sfcgal_geometry_alpha_shapes(const sfcgal_geometry_t *geom, double alpha,
+                             bool allow_holes);
 
 /**
  * Returns the optimal alpha shapes of geom
@@ -1119,6 +1135,9 @@ sfcgal_geometry_line_sub_string(const sfcgal_geometry_t *geom, double start,
  * @post isValid(return) == true
  * @ingroup capi
  */
+sfcgal_geometry_t *
+sfcgal_geometry_optimal_alpha_shapes(const sfcgal_geometry_t *geom,
+                                     bool allow_holes, size_t nb_components);
 
 /**
  * Returns the y monotone partition of a geometry (polygon without hole)
@@ -1205,7 +1224,7 @@ typedef enum {
  * @return A new geometry representing the 3D buffer
  * @pre isValid(geom) == true
  * @pre radius > 0
- * @pre segments > 2
+ * @pre segments > 3
  * @post isValid(return) == true
  * @ingroup capi
  */
