@@ -2433,7 +2433,21 @@ class MultiPoint(GeometryCollectionBase):
 
 
 class MultiLineString(GeometryCollectionBase):
-    def __init__(self, coords=None):
+    def __init__(self, coords: Tuple = ()):
+        """Initialize the MultiLineString with a tuple of coordinates.
+
+        Parameters
+        ----------
+        coords : Tuple
+            MultiLineString coordinates.
+            If coords is empty, an empty MultiLineString is created.
+
+        Returns
+        -------
+        MultiLineString
+            A MultiLineString with coordinates coords
+
+        """
         self._geom = MultiLineString.sfcgal_geom_from_coordinates(coords)
 
     @staticmethod
