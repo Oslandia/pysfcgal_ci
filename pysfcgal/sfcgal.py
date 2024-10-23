@@ -2438,14 +2438,14 @@ class MultiLineString(GeometryCollectionBase):
 
     @staticmethod
     def sfcgal_geom_from_coordinates(
-            coordinates: list, close: bool = False) -> ffi.CData:
-        """Instantiates a SFCGAL MultiLineString starting from a list of coordinates.
+            coordinates: Tuple, close: bool = False) -> ffi.CData:
+        """Instantiates a SFCGAL MultiLineString starting from a tuple of coordinates.
 
         Parameters
         ----------
-        coordinates: list
+        coordinates : Tuple
             MultiLineString coordinates.
-        close: bool
+        close : bool
             If True, the linestrings are built as closed even if their coordinates are
             not, i.e. their first point is replicated at the last position.
 
