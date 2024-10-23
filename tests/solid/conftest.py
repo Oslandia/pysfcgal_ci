@@ -39,54 +39,54 @@ def create_cube_coordinates(min_val=0, max_val=1):
 
 
 @pytest.fixture
-def points_ext():
+def points_ext_1():
     yield create_cube_coordinates(0., 10.)
 
 
 @pytest.fixture
-def points_int_1():
+def points_int_1_1():
     yield create_cube_coordinates(2., 3.)
 
 
 @pytest.fixture
-def points_int_2():
+def points_int_2_1():
     yield create_cube_coordinates(6., 8.)
 
 
 @pytest.fixture
-def expected_polyhedralsurfaces(points_ext, points_int_1, points_int_2):
+def expected_polyhedralsurfaces(points_ext_1, points_int_1_1, points_int_2_1):
     yield [
-        PolyhedralSurface(points_ext),
-        PolyhedralSurface(points_int_1),
-        PolyhedralSurface(points_int_2),
+        PolyhedralSurface(points_ext_1),
+        PolyhedralSurface(points_int_1_1),
+        PolyhedralSurface(points_int_2_1),
     ]
 
 
 @pytest.fixture
-def composed_polyhedralsurface(points_ext, points_int_1, points_int_2):
-    yield PolyhedralSurface(points_ext + points_int_1 + points_int_2)
+def composed_polyhedralsurface(points_ext_1, points_int_1_1, points_int_2_1):
+    yield PolyhedralSurface(points_ext_1 + points_int_1_1 + points_int_2_1)
 
 
 @pytest.fixture
-def solid(points_ext, points_int_1, points_int_2):
-    yield Solid([points_ext, points_int_1, points_int_2])
+def solid_1(points_ext_1, points_int_1_1, points_int_2_1):
+    yield Solid([points_ext_1, points_int_1_1, points_int_2_1])
 
 
 @pytest.fixture
-def solid_without_holes(points_ext):
-    yield Solid([points_ext])
+def solid_without_holes(points_ext_1):
+    yield Solid([points_ext_1])
 
 
 @pytest.fixture
-def solid_unordered(points_ext, points_int_1, points_int_2):
-    yield Solid([points_ext, points_int_2, points_int_1])
+def solid_unordered(points_ext_1, points_int_1_1, points_int_2_1):
+    yield Solid([points_ext_1, points_int_2_1, points_int_1_1])
 
 
 @pytest.fixture
-def multisolid(solid, solid_without_holes, solid_unordered):
+def multisolid(solid_1, solid_without_holes, solid_unordered):
     yield MultiSolid(
         [
-            solid.to_coordinates(),
+            solid_1.to_coordinates(),
             solid_without_holes.to_coordinates(),
             solid_unordered.to_coordinates(),
         ]
@@ -94,21 +94,21 @@ def multisolid(solid, solid_without_holes, solid_unordered):
 
 
 @pytest.fixture
-def other_multisolid(solid):
-    yield MultiSolid([solid.to_coordinates()])
+def other_multisolid(solid_1):
+    yield MultiSolid([solid_1.to_coordinates()])
 
 
 @pytest.fixture
-def multisolid_unordered(solid, solid_without_holes, solid_unordered):
+def multisolid_unordered(solid_1, solid_without_holes, solid_unordered):
     yield MultiSolid(
         [
             solid_without_holes.to_coordinates(),
             solid_unordered.to_coordinates(),
-            solid.to_coordinates(),
+            solid_1.to_coordinates(),
         ]
     )
 
 
 @pytest.fixture
-def expected_solids(solid, solid_without_holes, solid_unordered):
-    yield [solid, solid_without_holes, solid_unordered]
+def expected_solids(solid_1, solid_without_holes, solid_unordered):
+    yield [solid_1, solid_without_holes, solid_unordered]
