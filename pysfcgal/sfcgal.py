@@ -2481,12 +2481,12 @@ class MultiPolygon(GeometryCollectionBase):
         self._geom = MultiPolygon.sfcgal_geom_from_coordinates(coords)
 
     @staticmethod
-    def sfcgal_geom_from_coordinates(coordinates: list) -> ffi.CData:
-        """Instantiates a SFCGAL MultiPolygon starting from a list of coordinates.
+    def sfcgal_geom_from_coordinates(coordinates: Tuple) -> ffi.CData:
+        """Instantiates a SFCGAL MultiPolygon starting from a tuple of coordinates.
 
         Parameters
         ----------
-        coordinates: list
+        coordinates: Tuple
             MultiPolygon coordinates.
 
         Returns
