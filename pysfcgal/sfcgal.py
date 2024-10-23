@@ -2397,12 +2397,12 @@ class MultiPoint(GeometryCollectionBase):
         self._geom = MultiPoint.sfcgal_geom_from_coordinates(coords)
 
     @staticmethod
-    def sfcgal_geom_from_coordinates(coordinates: list) -> ffi.CData:
-        """Instantiates a SFCGAL MultiPoint starting from a list of coordinates.
+    def sfcgal_geom_from_coordinates(coordinates: Tuple) -> ffi.CData:
+        """Instantiates a SFCGAL MultiPoint starting from a tuple of coordinates.
 
         Parameters
         ----------
-        coordinates: list
+        coordinates : Tuple
             MultiPoint coordinates.
 
         Returns
