@@ -4,16 +4,6 @@ from pysfcgal.sfcgal import LineString
 
 
 @pytest.fixture
-def line(c000, c100, c010):
-    yield LineString([c000, c100, c010])
-
-
-@pytest.fixture
-def line2(c000, c100, c001):
-    yield LineString([c000, c100, c001])
-
-
-@pytest.fixture
 def long_line(c000, c100, c010, c001):
     yield LineString([c000, c100, c010, c001])
 
@@ -43,28 +33,28 @@ def test_linestring_to_dict(long_line):
     assert other_line == long_line
 
 
-def test_linestring_eq(line, line2):
-    assert line != line2
-    assert line != line2[:-1]
-    assert line[:-1] == line2[:-1]
+def test_linestring_eq(long_line, lineX, lineY):
+    assert long_line != lineX
+    assert lineX != lineY
+    assert long_line[:2] == lineX[:]
 
 
-def test_linestring_getter(line):
+def test_linestring_getter(long_line):
     # Indexing with a wrong type
     with pytest.raises(TypeError):
-        _ = line["cant-index-with-a-string"]
+        _ = long_line["cant-index-with-a-string"]
     # Positive indexing
-    for idx, p in enumerate(line):
-        assert line[idx] == p
+    for idx, p in enumerate(long_line):
+        assert long_line[idx] == p
     with pytest.raises(IndexError):
-        _ = line[99]
+        _ = long_line[99]
     # Negative indexing
-    for idx, p in enumerate(reversed(line)):
-        assert line[-(idx + 1)] == p
+    for idx, p in enumerate(reversed(long_line)):
+        assert long_line[-(idx + 1)] == p
     with pytest.raises(IndexError):
-        _ = line[-99]
+        _ = long_line[-99]
     # Slicing
     start_index = 1
-    points = line[start_index:start_index+2]
+    points = long_line[start_index:start_index+2]
     for idx, p in enumerate(points):
-        assert p == line[start_index+idx]
+        assert p == long_line[start_index+idx]

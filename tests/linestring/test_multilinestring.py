@@ -1,6 +1,6 @@
 import pytest
 
-from pysfcgal.sfcgal import LineString, MultiLineString
+from pysfcgal.sfcgal import MultiLineString
 
 
 @pytest.fixture
@@ -19,8 +19,8 @@ def multilinestring_unordered(c000, c100, c010, c001):
 
 
 @pytest.fixture
-def expected_linestrings(c000, c100, c010, c001):
-    yield [LineString([c000, c100]), LineString([c000, c010]), LineString([c000, c001])]
+def expected_linestrings(lineX, lineY, lineZ):
+    yield [lineX, lineY, lineZ]
 
 
 def test_multilinestring_iteration(multilinestring, expected_linestrings):
