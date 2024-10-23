@@ -58,3 +58,20 @@ def test_solid_set_exterior_shell(
     if has_icontract:
         with pytest.raises(icontract.errors.ViolationError):
             solid_1.set_exterior_shell(LineString([c000, c100, c010]))
+
+
+def test_solid_add_interior_shell(
+        solid_1, points_ext_1, points_ext_2, c000, c100, c010):
+    new_interior_shell = PolyhedralSurface(points_ext_2)
+
+    assert solid_1.n_shells == 3
+    assert new_interior_shell not in solid_1
+
+    solid_1.add_interior_shell(new_interior_shell)
+    assert solid_1.n_shells == 4
+    assert solid_1.shells[3] == new_interior_shell
+
+    # try to add a linestring as interiro shell
+    if has_icontract:
+        with pytest.raises(icontract.errors.ViolationError):
+            solid_1.add_interior_shell(LineString([c000, c100, c010]))
