@@ -3155,13 +3155,13 @@ class Solid(GeometryCollectionBase):
 
     @staticmethod
     def sfcgal_geom_from_coordinates(
-            coordinates: list, close: bool = False) -> ffi.CData:
-        """Instantiates a SFCGAL Solid starting from a list of coordinates.
+            coordinates: Tuple, close: bool = False) -> ffi.CData:
+        """Instantiates a SFCGAL Solid starting from a tuple of coordinates.
 
         Parameters
         ----------
-        coordinates : list
-            A list of coordinate tuples representing the solid's shells.
+        coordinates : Tuple
+            A tuple of coordinate tuples representing the solid's shells.
 
         Returns
         -------
