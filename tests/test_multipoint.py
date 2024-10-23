@@ -1,6 +1,6 @@
 import pytest
 
-from pysfcgal.sfcgal import MultiPoint, Point
+from pysfcgal.sfcgal import MultiPoint
 
 
 @pytest.fixture
@@ -16,11 +16,6 @@ def other_multipoint(c100, c010, c001):
 @pytest.fixture
 def multipoint_unordered(c000, c100, c010):
     yield MultiPoint((c100, c010, c000))
-
-
-@pytest.fixture
-def expected_points(c000, c100, c010):
-    yield [Point(*c000), Point(*c100), Point(*c010)]
 
 
 def test_multipoint_iteration(multipoint, expected_points):

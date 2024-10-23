@@ -1,6 +1,6 @@
 import pytest
 
-from pysfcgal.sfcgal import Point, Polygon, Triangle
+from pysfcgal.sfcgal import Polygon, Triangle
 
 
 @pytest.fixture
@@ -16,11 +16,6 @@ def triangle_2(c000, c100, c001):
 @pytest.fixture
 def triangle_unordered(c000, c100, c010):
     yield Triangle([c100, c010, c000])
-
-
-@pytest.fixture
-def expected_points(c000, c100, c010):
-    yield [Point(*c000), Point(*c100), Point(*c010)]
 
 
 @pytest.fixture
