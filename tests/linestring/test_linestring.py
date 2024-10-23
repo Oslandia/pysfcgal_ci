@@ -27,6 +27,17 @@ def test_linestring_to_coordinates(long_line, c000, c100, c010, c001):
     assert other_linestring == long_line
 
 
+def test_linestring_coordinate_sequence(long_line, c000, c100, c010, c001):
+    for coord_in_sequence, expected_coord in zip(
+        long_line.coords, [c000, c100, c010, c001]
+    ):
+        assert coord_in_sequence == expected_coord
+    for coord_in_sequence, coordinate in zip(
+        long_line.coords, long_line.to_coordinates()
+    ):
+        assert coord_in_sequence == coordinate
+
+
 def test_linestring_to_dict(long_line):
     linestring_data = long_line.to_dict()
     other_line = LineString.from_dict(linestring_data)
