@@ -18,6 +18,14 @@ def multipoint_unordered(c000, c100, c010):
     yield MultiPoint((c100, c010, c000))
 
 
+def test_multipoint_constructor(multipoint):
+    empty_multipoint = MultiPoint()
+    assert empty_multipoint.to_wkt() == "MULTIPOINT EMPTY"
+
+    multipoint_cloned = MultiPoint(multipoint.to_coordinates())
+    multipoint_cloned == multipoint
+
+
 def test_multipoint_iteration(multipoint, expected_points):
     for point, expected_point in zip(multipoint, expected_points):
         assert point == expected_point

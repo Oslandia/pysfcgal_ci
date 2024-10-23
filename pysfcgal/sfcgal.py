@@ -2393,7 +2393,21 @@ class GeometryCollectionBase(Geometry):
 
 
 class MultiPoint(GeometryCollectionBase):
-    def __init__(self, coords=None):
+    def __init__(self, coords: Tuple = ()):
+        """Initialize the MultiPoint with a tuple of coordinates.
+
+        Parameters
+        ----------
+        coords : Tuple
+            MultiPoint coordinates.
+            If coords is empty, an empty MultiPoint is created.
+
+        Returns
+        -------
+        MultiPoint
+            A MultiPoint with coordinates coords
+
+        """
         self._geom = MultiPoint.sfcgal_geom_from_coordinates(coords)
 
     @staticmethod
