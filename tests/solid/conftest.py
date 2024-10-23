@@ -49,8 +49,23 @@ def points_int_1_1():
 
 
 @pytest.fixture
-def points_int_2_1():
+def points_int_1_2():
     yield create_cube_coordinates(6., 8.)
+
+
+@pytest.fixture
+def points_ext_2():
+    yield create_cube_coordinates(12., 25.)
+
+
+@pytest.fixture
+def points_int_2_1():
+    yield create_cube_coordinates(14., 16.)
+
+
+@pytest.fixture
+def points_int_2_2():
+    yield create_cube_coordinates(19., 22.)
 
 
 @pytest.fixture
@@ -70,6 +85,11 @@ def composed_polyhedralsurface(points_ext_1, points_int_1_1, points_int_2_1):
 @pytest.fixture
 def solid_1(points_ext_1, points_int_1_1, points_int_2_1):
     yield Solid([points_ext_1, points_int_1_1, points_int_2_1])
+
+
+@pytest.fixture
+def solid_2(points_ext_2, points_int_2_1, points_int_2_2):
+    yield Solid([points_ext_2, points_int_2_1, points_int_2_2])
 
 
 @pytest.fixture
