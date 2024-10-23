@@ -3001,15 +3001,16 @@ class PolyhedralSurface(GeometryCollectionBase):
 
 
 class Solid(GeometryCollectionBase):
-    def __init__(self, coords=None):
+    def __init__(self, coords: Tuple = ()):
         """Initialize the Solid with the given coordinates.
 
         Parameters
         ----------
         coords : list of list of tuples, optional
-            A list where the first element is the exterior shell coordinates, and the
-            subsequent elements are the interior shell coordinates. If None, initializes
-            an empty solid.
+            A tuple where the first element is the exterior shell coordinates, and the
+            subsequent elements are the interior shell coordinates.
+            If coords is empty, an empty Solid is created.
+
         """
         self._geom = Solid.sfcgal_geom_from_coordinates(coords)
 

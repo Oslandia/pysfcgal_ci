@@ -1,6 +1,11 @@
 from pysfcgal.sfcgal import Solid
 
 
+def test_solid_constructor(solid):
+    empty_solid = Solid()
+    assert empty_solid.to_wkt() == "SOLID EMPTY"
+
+
 def test_solid(
     solid, expected_polyhedralsurfaces, solid_without_holes, solid_unordered
 ):
