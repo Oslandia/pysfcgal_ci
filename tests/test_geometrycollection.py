@@ -4,8 +4,8 @@ from pysfcgal.sfcgal import GeometryCollection, LineString, Point, Polygon
 
 
 @pytest.fixture
-def expected_geometries(c0, c1, c2, c3):
-    yield [Point(*c0), LineString([c1, c2, c3]), Polygon([c0, c1, c2])]
+def expected_geometries(c000, c100, c010, c001):
+    yield [Point(*c000), LineString([c100, c010, c001]), Polygon([c000, c100, c010])]
 
 
 @pytest.fixture
@@ -58,8 +58,12 @@ def test_geometry_collection_equality(
     assert collection != collection_unordered
 
 
-def test_geometry_collection_to_coordinates(collection, c0, c1, c2, c3):
-    assert collection.to_coordinates() == [c0, [c1, c2, c3], [[c0, c1, c2, c0]]]
+def test_geometry_collection_to_coordinates(collection, c000, c100, c010, c001):
+    assert collection.to_coordinates() == [
+        c000,
+        [c100, c010, c001],
+        [[c000, c100, c010, c000]],
+    ]
     # Can't test the clone, as GeometryCollection can't be instantiated from coordinates
 
 

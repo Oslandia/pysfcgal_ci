@@ -4,23 +4,23 @@ from pysfcgal.sfcgal import MultiPoint, Point
 
 
 @pytest.fixture
-def multipoint(c0, c1, c2):
-    yield MultiPoint((c0, c1, c2))
+def multipoint(c000, c100, c010):
+    yield MultiPoint((c000, c100, c010))
 
 
 @pytest.fixture
-def other_multipoint(c1, c2, c3):
-    yield MultiPoint((c1, c2, c3))
+def other_multipoint(c100, c010, c001):
+    yield MultiPoint((c100, c010, c001))
 
 
 @pytest.fixture
-def multipoint_unordered(c0, c1, c2):
-    yield MultiPoint((c1, c2, c0))
+def multipoint_unordered(c000, c100, c010):
+    yield MultiPoint((c100, c010, c000))
 
 
 @pytest.fixture
-def expected_points(c0, c1, c2):
-    yield [Point(*c0), Point(*c1), Point(*c2)]
+def expected_points(c000, c100, c010):
+    yield [Point(*c000), Point(*c100), Point(*c010)]
 
 
 def test_multipoint_iteration(multipoint, expected_points):
@@ -42,8 +42,8 @@ def test_multipoint_equality(multipoint, other_multipoint, multipoint_unordered)
     assert multipoint != multipoint_unordered
 
 
-def test_multipoint_to_coordinates(multipoint, c0, c1, c2):
-    assert multipoint.to_coordinates() == [c0, c1, c2]
+def test_multipoint_to_coordinates(multipoint, c000, c100, c010):
+    assert multipoint.to_coordinates() == [c000, c100, c010]
     cloned_multipoint = MultiPoint(multipoint.to_coordinates())
     assert cloned_multipoint == multipoint
     other_multipoint = MultiPoint.from_coordinates(multipoint.to_coordinates())

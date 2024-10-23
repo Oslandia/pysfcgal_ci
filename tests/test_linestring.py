@@ -4,18 +4,18 @@ from pysfcgal.sfcgal import LineString
 
 
 @pytest.fixture
-def line(c0, c1, c2):
-    yield LineString([c0, c1, c2])
+def line(c000, c100, c010):
+    yield LineString([c000, c100, c010])
 
 
 @pytest.fixture
-def line2(c0, c1, c3):
-    yield LineString([c0, c1, c3])
+def line2(c000, c100, c001):
+    yield LineString([c000, c100, c001])
 
 
 @pytest.fixture
-def long_line(c0, c1, c2, c3):
-    yield LineString([c0, c1, c2, c3])
+def long_line(c000, c100, c010, c001):
+    yield LineString([c000, c100, c010, c001])
 
 
 @pytest.mark.parametrize(
@@ -25,12 +25,12 @@ def test_linestring_len(linestring, expected_length):
     assert len(linestring) == expected_length
 
 
-def test_linestring_to_coordinates(long_line, c0, c1, c2, c3):
+def test_linestring_to_coordinates(long_line, c000, c100, c010, c001):
     coords = long_line.to_coordinates()
     assert len(coords) == 4
-    assert coords[0] == c0
-    assert coords[-1] == c3
-    assert coords[0:2] == [c0, c1]
+    assert coords[0] == c000
+    assert coords[-1] == c001
+    assert coords[0:2] == [c000, c100]
     cloned_linestring = LineString(coords)
     assert cloned_linestring == long_line
     other_linestring = LineString.from_coordinates(coords)

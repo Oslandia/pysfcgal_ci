@@ -4,23 +4,32 @@ from pysfcgal.sfcgal import MultiPolygon, Tin, Triangle
 
 
 @pytest.fixture
-def expected_triangles(c0, c1, c2, c3):
+def expected_triangles(c000, c100, c010, c001):
     yield [
-        Triangle([c0, c1, c2]),
-        Triangle([c0, c1, c3]),
-        Triangle([c0, c2, c3]),
-        Triangle([c1, c2, c3]),
+        Triangle([c000, c100, c010]),
+        Triangle([c000, c100, c001]),
+        Triangle([c000, c010, c001]),
+        Triangle([c100, c010, c001]),
     ]
 
 
 @pytest.fixture
-def tin_coordinates(c0, c1, c2, c3):
-    yield [[c0, c1, c2], [c0, c1, c3], [c0, c2, c3], [c1, c2, c3]]
+def tin_coordinates(c000, c100, c010, c001):
+    yield [
+        [c000, c100, c010], [c000, c100, c001], [c000, c010, c001], [c100, c010, c001]
+    ]
 
 
 @pytest.fixture
-def expected_multipolygon(c0, c1, c2, c3):
-    yield MultiPolygon([[[c0, c1, c2]], [[c0, c1, c3]], [[c0, c2, c3]], [[c1, c2, c3]]])
+def expected_multipolygon(c000, c100, c010, c001):
+    yield MultiPolygon(
+        [
+            [[c000, c100, c010]],
+            [[c000, c100, c001]],
+            [[c000, c010, c001]],
+            [[c100, c010, c001]],
+        ]
+    )
 
 
 @pytest.fixture
@@ -29,13 +38,13 @@ def tin(tin_coordinates):
 
 
 @pytest.fixture
-def tin_unclosed(c0, c1, c2, c3):
-    yield Tin([[c0, c1, c2], [c0, c1, c3], [c0, c2, c3]])
+def tin_unclosed(c000, c100, c010, c001):
+    yield Tin([[c000, c100, c010], [c000, c100, c001], [c000, c010, c001]])
 
 
 @pytest.fixture
-def tin_unordered(c0, c1, c2, c3):
-    yield Tin([[c0, c1, c2], [c0, c1, c3], [c0, c2, c3]])
+def tin_unordered(c000, c100, c010, c001):
+    yield Tin([[c000, c100, c010], [c000, c100, c001], [c000, c010, c001]])
 
 
 def test_tin(tin, expected_triangles, tin_unclosed, tin_unordered):

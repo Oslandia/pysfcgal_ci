@@ -4,33 +4,43 @@ from pysfcgal.sfcgal import Polygon, PolyhedralSurface
 
 
 @pytest.fixture
-def polyhedralsurface(c0, c1, c2, c3):
+def polyhedralsurface(c000, c100, c010, c001):
     yield PolyhedralSurface(
-        [[[c0, c1, c2]], [[c0, c1, c3]], [[c0, c2, c3]], [[c1, c2, c3]]]
+        [
+            [[c000, c100, c010]],
+            [[c000, c100, c001]],
+            [[c000, c010, c001]],
+            [[c100, c010, c001]],
+        ]
     )
 
 
 @pytest.fixture
-def other_polyhedralsurface(c0, c1, c2, c3):
+def other_polyhedralsurface(c000, c100, c010, c001):
     yield PolyhedralSurface(
-        [[[c0, c1, c2]], [[c0, c1, c3]], [[c0, c2, c3]]]
+        [[[c000, c100, c010]], [[c000, c100, c001]], [[c000, c010, c001]]]
     )
 
 
 @pytest.fixture
-def polyhedralsurface_unordered(c0, c1, c2, c3):
+def polyhedralsurface_unordered(c000, c100, c010, c001):
     yield PolyhedralSurface(
-        [[[c1, c2, c3]], [[c0, c1, c2]], [[c0, c1, c3]], [[c0, c2, c3]]]
+        [
+            [[c100, c010, c001]],
+            [[c000, c100, c010]],
+            [[c000, c100, c001]],
+            [[c000, c010, c001]],
+        ]
     )
 
 
 @pytest.fixture
-def expected_polygons(c0, c1, c2, c3):
+def expected_polygons(c000, c100, c010, c001):
     yield [
-        Polygon([c0, c1, c2]),
-        Polygon([c0, c1, c3]),
-        Polygon([c0, c2, c3]),
-        Polygon([c1, c2, c3]),
+        Polygon([c000, c100, c010]),
+        Polygon([c000, c100, c001]),
+        Polygon([c000, c010, c001]),
+        Polygon([c100, c010, c001]),
     ]
 
 
@@ -58,9 +68,12 @@ def test_polyhedralsurface_equality(
     assert polyhedralsurface != polyhedralsurface_unordered
 
 
-def test_polyhedralsurface_to_coordinates(polyhedralsurface, c0, c1, c2, c3):
+def test_polyhedralsurface_to_coordinates(polyhedralsurface, c000, c100, c010, c001):
     assert polyhedralsurface.to_coordinates() == [
-        [[c0, c1, c2, c0]], [[c0, c1, c3, c0]], [[c0, c2, c3, c0]], [[c1, c2, c3, c1]]
+        [[c000, c100, c010, c000]],
+        [[c000, c100, c001, c000]],
+        [[c000, c010, c001, c000]],
+        [[c100, c010, c001, c100]],
     ]
     other_phs = PolyhedralSurface.from_coordinates(polyhedralsurface.to_coordinates())
     assert other_phs == polyhedralsurface

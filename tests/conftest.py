@@ -13,20 +13,20 @@ def tmp_test_dir():
 
 
 @pytest.fixture
-def c0():
+def c000():
     yield (0., 0., 0.)
 
 
 @pytest.fixture
-def c1():
+def c100():
     yield (1., 0., 0.)
 
 
 @pytest.fixture
-def c2():
+def c010():
     yield (0., 1., 0.)
 
 
 @pytest.fixture
-def c3():
+def c001():
     yield (0., 0., 1.)

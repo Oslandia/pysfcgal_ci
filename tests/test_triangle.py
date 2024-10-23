@@ -4,28 +4,28 @@ from pysfcgal.sfcgal import Point, Polygon, Triangle
 
 
 @pytest.fixture
-def triangle(c0, c1, c2):
-    yield Triangle([c0, c1, c2])
+def triangle(c000, c100, c010):
+    yield Triangle([c000, c100, c010])
 
 
 @pytest.fixture
-def triangle_2(c0, c1, c3):
-    yield Triangle([c0, c1, c3])
+def triangle_2(c000, c100, c001):
+    yield Triangle([c000, c100, c001])
 
 
 @pytest.fixture
-def triangle_unordered(c0, c1, c2):
-    yield Triangle([c1, c2, c0])
+def triangle_unordered(c000, c100, c010):
+    yield Triangle([c100, c010, c000])
 
 
 @pytest.fixture
-def expected_points(c0, c1, c2):
-    yield [Point(*c0), Point(*c1), Point(*c2)]
+def expected_points(c000, c100, c010):
+    yield [Point(*c000), Point(*c100), Point(*c010)]
 
 
 @pytest.fixture
-def expected_polygon(c0, c1, c2):
-    yield Polygon([c0, c1, c2])
+def expected_polygon(c000, c100, c010):
+    yield Polygon([c000, c100, c010])
 
 
 def test_triangle(triangle, expected_points, triangle_2, triangle_unordered):
@@ -49,8 +49,8 @@ def test_triangle_to_polygon(triangle, expected_polygon):
     assert polygon == expected_polygon
 
 
-def test_triangle_to_coordinates(triangle, c0, c1, c2):
-    assert triangle.to_coordinates() == [c0, c1, c2]
+def test_triangle_to_coordinates(triangle, c000, c100, c010):
+    assert triangle.to_coordinates() == [c000, c100, c010]
     cloned_triangle = Triangle(triangle.to_coordinates())
     assert cloned_triangle == triangle
     other_triangle = Triangle.from_coordinates(triangle.to_coordinates())
