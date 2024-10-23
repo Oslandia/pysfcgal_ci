@@ -2271,7 +2271,7 @@ class CoordinateSequence:
             A tuple representing the coordinates of the point at index n.
         """
         point_n = lib.sfcgal_linestring_point_n(self._parent._geom, n)
-        return Point.from_sfcgal_geometry(point_n).to_coordinates()
+        return Point.from_sfcgal_geometry(point_n, owned=False).to_coordinates()
 
     def __getitem__(self, key):
         """Get a coordinate (or several) within the sequence, identified through an
