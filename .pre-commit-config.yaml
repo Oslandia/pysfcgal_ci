@@ -44,3 +44,23 @@ repos:
       - id: commitizen
       - id: commitizen-branch
         stages: [push]
+
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.42.0
+    hooks:
+      - id: markdownlint
+        args:
+          [
+            "--config",
+            ".markdownlint.json",
+            "--ignore-path",
+            ".markdownlintignore",
+            "--fix",
+          ]
+        language: node
+        pass_filenames: true
+        files: ^website/.*
+        types:
+          - file
+          - markdown
+          - non-executable
