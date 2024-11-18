@@ -5,13 +5,20 @@ repo_url: "https://gitlab.com/sfcgal/pysfcgal/"
 theme:
   name: material
   features:
-    - navigation.instant
-    - navigation.top
-    - navigation.tabs
     - navigation.hide
+    - navigation.instant
+    - navigation.instant.progress
+    - navigation.sections
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.top
+    - navigation.tracking
+    - toc.follow
+    - toc.integrate
   logo: assets/img/sfcgal.png
   favicon: assets/img/sfcgal.png
-  repo_icon: "gitlab"
+  icon:
+    repo: fontawesome/brands/gitlab
   palette:
      primary: custom
      accent: custom
