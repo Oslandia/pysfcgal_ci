@@ -40,3 +40,12 @@ def test_solid_to_dict(solid):
     solid_data = solid.to_dict()
     other_solid = Solid.from_dict(solid_data)
     assert other_solid == solid
+
+
+def test_tessellate_3d(solid):
+    # FIXME: solid is not valid, can't tessellate directly
+    # tessellation = solid.tessellate_3d()
+    # assert tessellation.geom_type == "GeometryCollection"
+    for shell in solid:
+        tessellation = shell.tessellate_3d()
+        assert tessellation.geom_type == "TIN"
