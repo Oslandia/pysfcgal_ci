@@ -173,6 +173,8 @@ build:documentation:
       changes:
         - "pysfcgal/*.py"
         - ".gitlab-ci.yml"
+        - "requirements/documentation.txt"
+        - "docs/docs/**/*.md"
       when: on_success
     - when: never
   before_script:
