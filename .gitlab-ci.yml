@@ -129,7 +129,7 @@ build:linux-wheel-python:
     SFCGAL_REGISTRY: registry.gitlab.com/sfcgal/sfcgal
   parallel:
     matrix:
-      - PYTHON_VERSION: ['3.9', '3.10', '3.11', '3.12']
+      - PYTHON_VERSION: ['3.9', '3.10', '3.11', '3.12', '3.13']
   script:
     - docker build
       --tag build_linux_wheel
