@@ -1,6 +1,3 @@
-// Copyright (c) 2012-2013, IGN France.
-// Copyright (c) 2012-2022, Oslandia.
-// SPDX-License-Identifier: LGPL-2.0-or-later
 
 // TODO : return of errors ! => error handler
 
@@ -89,6 +86,27 @@ int
 sfcgal_geometry_is_valid_detail(const sfcgal_geometry_t *geom,
                                 char                   **invalidity_reason,
                                 sfcgal_geometry_t      **invalidity_location);
+
+
+/**
+ * Tests if the given geometry is simple or not
+ * @ingroup capi
+ */
+int
+sfcgal_geometry_is_simple(const sfcgal_geometry_t *);
+
+/**
+ * Tests if the given geometry is simple or not
+ * And return details in case of complexity
+ * @param geom the input geometry
+ * @param complexity_reason input/output parameter. If non null, a
+ * null-terminated string could be allocated and contain reason of the
+ * complexity
+ * @ingroup capi
+ */
+int
+sfcgal_geometry_is_simple_detail(const sfcgal_geometry_t *geom,
+                                 char                   **complexity_reason);
 
 /**
  * Tests if the given geometry is 3D or not
@@ -620,6 +638,18 @@ sfcgal_solid_add_interior_shell(sfcgal_geometry_t *solid,
                                 sfcgal_geometry_t *shell);
 
 /**
+ * Set the exterior shell of a given Solid
+ * @pre solid must be a Solid
+ * @pre shell must be a PolyhedralSurface
+ * @post the ownership of the shell is taken. The caller is not responsible
+ * anymore of its deallocation
+ * @ingroup capi
+ */
+void
+sfcgal_solid_set_exterior_shell(sfcgal_geometry_t *solid,
+                                sfcgal_geometry_t *shell);
+
+/**
  * Gets the validity flag of the geometry.
  */
 int
@@ -1128,6 +1158,109 @@ sfcgal_geometry_optimal_alpha_shapes(const sfcgal_geometry_t *geom,
                                      bool allow_holes, size_t nb_components);
 
 /**
+ * Returns the 3D alpha wrapping of a geometry
+ * @pre isValid(geom) == true
+ * @pre relativeAlpa >= 0
+ * @pre relativeOffset >= 0
+ * @post isValid(return) == true
+ * @param geom input geometry
+ * @param relativeAlpha This parameter is used to determine which features will
+ *  appear in the output. A small relativeAlpha will produce an output less
+ *  complex but less faithful to the input.
+ * @param relativeOffset  This parameter controls the tightness of the result.
+ *  A large relativeOffset parameter will tend to better preserve sharp features
+ *  as projection. If this parameter is equal to 0, it is computed from the
+ * alpha parameter
+ * @return A PolyhedralSurface representing the 3D alpha wrapping of the
+ * geometry
+ * @ingroup capi
+ */
+sfcgal_geometry_t *
+sfcgal_geometry_alpha_wrapping_3d(const sfcgal_geometry_t *geom,
+                                  size_t                   relative_alpha,
+                                  size_t                   relative_offset);
+
+/**
+ * Returns the envelope of geom
+ * @pre isValid(geom) == true
+ * @post isValid(return) == true
+ * @ingroup capi
+ */
+sfcgal_geometry_t *
+sfcgal_geometry_envelope(const sfcgal_geometry_t *geom);
+
+/**
+ * Returns the 3d envelope of geom
+ * @pre isValid(geom) == true
+ * @post isValid(return) == true
+ * @ingroup capi
+ */
+sfcgal_geometry_t *
+sfcgal_geometry_envelope_3d(const sfcgal_geometry_t *geom);
+
+/**
+ * Returns the 2D length of geom
+ * @pre isValid(geom) == true
+ * @post isValid(return) == true
+ * @ingroup capi
+ */
+double
+sfcgal_geometry_length(const sfcgal_geometry_t *geom);
+
+/**
+ * Returns the 3D length of geom
+ * @pre isValid(geom) == true
+ * @post isValid(return) == true
+ * @ingroup capi
+ */
+double
+sfcgal_geometry_length_3d(const sfcgal_geometry_t *geom);
+
+/**
+ * Returns a Point representing the geometry centroid
+ * @pre isValid(geom) == true
+ * @post isValid(return) == true
+ * @ingroup capi
+ */
+sfcgal_geometry_t *
+sfcgal_geometry_centroid(const sfcgal_geometry_t *geom);
+
+/**
+ * Returns a Point representing the geometry centroid
+ * @pre isValid(geom) == true
+ * @post isValid(return) == true
+ * @ingroup capi
+ */
+sfcgal_geometry_t *
+sfcgal_geometry_centroid_3d(const sfcgal_geometry_t *geom);
+
+/**
+ * Returns true if geom1 is equals to geom2.
+ *
+ * For each point of geom1 there is a point in geom2.
+ * @pre isValid(geom) == true
+ * @post isValid(return) == true
+ * @ingroup capi
+ */
+int
+sfcgal_geometry_is_equals(const sfcgal_geometry_t *geom1,
+                          const sfcgal_geometry_t *geom2);
+
+/**
+ * Returns true if geom1 is almost equals to geom2.
+ *
+ * For each point of geom1 there is a point in geom2 within tolerance distance.
+ * @param tolerance
+ * @pre isValid(geom) == true
+ * @post isValid(return) == true
+ * @ingroup capi
+ */
+int
+sfcgal_geometry_is_almost_equals(const sfcgal_geometry_t *geom1,
+                                 const sfcgal_geometry_t *geom2,
+                                 double                   tolerance);
+
+/**
  * Returns the y monotone partition of a geometry (polygon without hole)
  * @pre isValid(geom) == true
  * @post isValid(return) == true
@@ -1400,7 +1533,8 @@ typedef void *(*sfcgal_alloc_handler_t)(size_t);
 typedef void (*sfcgal_free_handler_t)(void *);
 
 /**
- * Sets the error handlers. These callbacks are called on warning or error
+ * Sets the allocation handlers. These functions are called on memory allocation
+ * and deallocation.
  * @param malloc_handler is the function to call for memory allocation. The
  * default behaviour is to call malloc()
  * @param free_handler is the function to call for memory deallocation. The
@@ -1410,6 +1544,14 @@ typedef void (*sfcgal_free_handler_t)(void *);
 void
 sfcgal_set_alloc_handlers(sfcgal_alloc_handler_t malloc_handler,
                           sfcgal_free_handler_t  free_handler);
+
+/**
+ * Delete a buffer previously allocated and returned by SFCGAL.
+ * @param buffer a buffer previously allocated and returned by SFCGAL
+ * @ingroup capi
+ */
+void
+sfcgal_free_buffer(void *buffer);
 
 /*--------------------------------------------------------------------------------------*
  *
