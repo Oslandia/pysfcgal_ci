@@ -60,6 +60,7 @@ test:unit:
       - master
     changes:
       - "pysfcgal/*.py"
+      - "pysfcgal/*.c"
       - "tests/*.py"
       - ".gitlab-ci.yml"
   before_script:
