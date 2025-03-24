@@ -19,10 +19,11 @@ lint:flake8:
       - "pysfcgal/*.py"
       - "tests/*.py"
       - ".gitlab-ci.yml"
+      - update_def.py
   before_script:
     - python -m pip install --force-reinstall flake8==7.1.1
   script:
-    - flake8 pysfcgal/ tests/ --config=setup.cfg
+    - flake8 update_def.py pysfcgal/ tests/ --config=setup.cfg
 
 lint:commit:
   stage: 🐍 lint
@@ -46,10 +47,11 @@ lint:mypy:
     changes:
       - "pysfcgal/*.py"
       - ".gitlab-ci.yml"
+      - update_def.py
   before_script:
     - python -m pip install -U mypy types-cffi typing-extensions
   script:
-    - mypy pysfcgal/
+    - mypy update_def.py pysfcgal/
 
 test:unit:
   stage: 🤞 test
