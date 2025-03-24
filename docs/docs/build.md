@@ -80,7 +80,8 @@ git clone git@gitlab.com:sfcgal/pysfcgal.git && cd pysfcgal
 Then install the Python binding through:
 
 ```shell
-env CFLAGS=-I/home/foo/SFCGAL/build/include LDFLAGS=-L/home/foo/SFCGAL/build/src python3 setup.py build install --user
+env CFLAGS=-I/home/foo/SFCGAL/build/include LDFLAGS=-L/home/foo/SFCGAL/build/src python3 -m build
+python3 -m pip install --user
 ```
 
 Where:
