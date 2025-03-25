@@ -955,7 +955,29 @@ class Geometry:
 
     def translate_2d(self, dx: float = 0, dy: float = 0) -> Optional[Geometry]:
         """
-        Translate a geometry by a 2D vector, hence producing a 2D-geometry as an output.
+        This method is an alias for the `translate` function.
+
+        .. deprecated:: 2.0.0
+                `translate_2d` will be removed in v3.0.0, it is replaced by
+                `translate` in order to be consistent in the function naming.
+
+        Parameters
+        ----------
+        dx : float, optional
+            x component of the translation vector
+        dy : float, optional
+            y component of the translation vector
+
+        Returns
+        -------
+        Geometry
+            A 2D geometry translated from the current geometry
+        """
+        return self.translate(dx, dy)
+
+    def translate(self, dx: float = 0, dy: float = 0) -> Optional[Geometry]:
+        """Translate a geometry by a 2D vector, hence producing a
+        2D-geometry as an output.
 
         Parameters
         ----------
